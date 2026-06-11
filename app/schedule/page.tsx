@@ -21,89 +21,121 @@ function formatMatchTime(utc: string): string {
   })
 }
 
+// ── Team download card ──────────────────────────────────────────────────
+function TeamDownloadCard({ team }: { team: Team }) {
+  return (
+    <a
+      href={`/api/ics?team=${encodeURIComponent(team.name)}`}
+      download
+      className="group flex items-center gap-3 bg-white/[0.05] hover:bg-green-900/50 border border-white/10 hover:border-green-500/60 rounded-xl px-4 py-3 transition-all"
+    >
+      <span className="text-2xl leading-none">{team.flag}</span>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-semibold truncate">{team.name}</p>
+        <p className="text-xs text-white/40">Group {team.group}</p>
+      </div>
+      <span className="shrink-0 bg-green-700/60 group-hover:bg-green-600 text-green-100 text-[11px] font-bold px-2 py-1 rounded-md transition-colors">
+        ⬇ .ics
+      </span>
+    </a>
+  )
+}
+
+// ── Group schedule card ─────────────────────────────────────────────────
 function GroupCard({ group, teams, matches }: { group: string; teams: Team[]; matches: Match[] }) {
   return (
     <div className="bg-white/[0.04] border border-white/10 rounded-2xl overflow-hidden">
-      {/* Group header */}
-      <div className="bg-green-900/40 border-b border-white/10 px-4 py-3 flex items-center justify-between">
-        <h2 className="text-xs font-bold uppercase tracking-widest text-green-300">
+      <div className="bg-green-900/30 border-b border-white/10 px-4 py-3 flex items-center justify-between">
+        <h3 className="text-xs font-bold uppercase tracking-widest text-green-300">
           Group {group}
-        </h2>
-        <div className="flex items-center gap-2">
+        </h3>
+        <div className="flex items-center gap-1.5">
           {teams.map((t) => (
-            <a
-              key={t.name}
-              href={`/api/ics?team=${encodeURIComponent(t.name)}`}
-              download
-              title={`Download ${t.name} schedule (.ics)`}
-              className="text-xl hover:scale-125 transition-transform"
-            >
+            <span key={t.name} className="text-base" title={t.name}>
               {t.flag}
-            </a>
+            </span>
           ))}
         </div>
       </div>
 
-      {/* Team list */}
-      <div className="px-4 pt-3 pb-1 flex flex-wrap gap-x-3 gap-y-1">
-        {teams.map((t) => (
-          <span key={t.name} className="text-xs text-white/50">
-            {t.flag} {t.name}
-          </span>
-        ))}
-      </div>
-
-      {/* Matches */}
-      <div className="divide-y divide-white/5 mt-2">
+      <div className="divide-y divide-white/5">
         {matches.map((m) => (
           <div key={m.id} className="px-4 py-3">
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center justify-between gap-2 mb-0.5">
               <span className="text-sm font-medium leading-snug">
-                {m.homeTeam} <span className="text-white/30 text-xs">vs</span> {m.awayTeam}
+                {m.homeTeam} <span className="text-white/30 text-xs font-normal">vs</span> {m.awayTeam}
               </span>
-              <span className="text-xs text-white/30 shrink-0">MD{m.matchday}</span>
+              <span className="text-xs text-white/25 shrink-0">MD{m.matchday}</span>
             </div>
-            <p className="text-xs text-white/40 mt-0.5">
+            <p className="text-xs text-white/40">
               {formatMatchDate(m.dateUtc)} · {formatMatchTime(m.dateUtc)}
             </p>
-            <p className="text-xs text-white/25 mt-0.5">
-              {m.venue}, {m.city}
-            </p>
+            <p className="text-xs text-white/25 mt-0.5">{m.venue}, {m.city}</p>
           </div>
         ))}
-      </div>
-
-      {/* ICS hint */}
-      <div className="px-4 py-2 border-t border-white/5">
-        <p className="text-[11px] text-white/25">
-          Tap a flag above to download your team&apos;s .ics schedule
-        </p>
       </div>
     </div>
   )
 }
 
+// ── Page ───────────────────────────────────────────────────────────────
 export default function SchedulePage() {
+  const allTeamsSorted = GROUPS.flatMap((g) => TEAMS.filter((t) => t.group === g))
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
-      <div className="mb-10">
-        <h1 className="text-3xl font-bold mb-2">Group Stage Schedule</h1>
-        <p className="text-white/50 text-sm">
-          June 11 – 28 · All times shown in PT · Tap any flag 🏴󠁧󠁢󠁥󠁮󠁧󠁿 to download a calendar file with 15-min reminders
+
+      {/* ── Hero ── */}
+      <div className="text-center mb-12">
+        <h1 className="text-3xl sm:text-4xl font-extrabold mb-3 tracking-tight">
+          Download Your Team&apos;s Schedule
+        </h1>
+        <p className="text-white/50 text-base max-w-md mx-auto">
+          Pick your team below — adds all 3 group stage matches to your calendar
+          with a <span className="text-green-400 font-medium">15-minute kickoff reminder</span>.
         </p>
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {GROUPS.map((group) => {
-          const teams = TEAMS.filter((t) => t.group === group)
-          const matches = MATCHES.filter((m) => m.group === group).sort(
-            (a, b) => new Date(a.dateUtc).getTime() - new Date(b.dateUtc).getTime()
-          )
-          return (
-            <GroupCard key={group} group={group} teams={teams} matches={matches} />
-          )
-        })}
-      </div>
+      {/* ── Team picker ── */}
+      <section className="mb-16">
+        <div className="flex items-center gap-3 mb-5">
+          <h2 className="text-sm font-bold uppercase tracking-widest text-green-400">
+            📅 Pick Your Team — Tap to Download
+          </h2>
+          <div className="flex-1 h-px bg-white/10" />
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          {allTeamsSorted.map((team) => (
+            <TeamDownloadCard key={team.name} team={team} />
+          ))}
+        </div>
+        <p className="text-xs text-white/30 text-center mt-4">
+          Works with Apple Calendar, Google Calendar, Outlook, and any app that supports .ics files
+        </p>
+      </section>
+
+      {/* ── Full schedule by group ── */}
+      <section>
+        <div className="flex items-center gap-3 mb-5">
+          <h2 className="text-sm font-bold uppercase tracking-widest text-green-400">
+            🗓 Full Group Stage Schedule
+          </h2>
+          <div className="flex-1 h-px bg-white/10" />
+        </div>
+        <p className="text-white/40 text-xs mb-6">
+          June 11 – 28 · All times shown in Pacific Time (PT)
+        </p>
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {GROUPS.map((group) => {
+            const teams = TEAMS.filter((t) => t.group === group)
+            const matches = MATCHES.filter((m) => m.group === group).sort(
+              (a, b) => new Date(a.dateUtc).getTime() - new Date(b.dateUtc).getTime()
+            )
+            return <GroupCard key={group} group={group} teams={teams} matches={matches} />
+          })}
+        </div>
+      </section>
+
     </div>
   )
 }
