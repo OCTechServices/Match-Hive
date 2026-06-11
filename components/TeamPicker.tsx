@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import type { Team, Match } from '@/types'
 
 interface Props {
@@ -24,6 +24,7 @@ function fmt(utc: string, type: 'date' | 'time'): string {
 export default function TeamPicker({ featured, others, matchesByTeam }: Props) {
   const [selected, setSelected] = useState<Team | null>(null)
   const [showAll, setShowAll] = useState(false)
+  const cardRef = useRef<HTMLDivElement>(null)
 
   const displayedTeams = showAll ? [...featured, ...others] : featured
   const matches = selected ? (matchesByTeam[selected.name] ?? []) : []
@@ -31,6 +32,12 @@ export default function TeamPicker({ featured, others, matchesByTeam }: Props) {
   function toggle(team: Team) {
     setSelected((prev) => (prev?.name === team.name ? null : team))
   }
+
+  useEffect(() => {
+    if (selected && cardRef.current) {
+      cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [selected])
 
   return (
     <section className="mb-14">
@@ -85,7 +92,7 @@ export default function TeamPicker({ featured, others, matchesByTeam }: Props) {
 
       {/* Selected team schedule */}
       {selected && (
-        <div className="mt-6 bg-white/[0.04] border border-green-500/25 rounded-2xl overflow-hidden">
+        <div ref={cardRef} className="mt-6 scroll-mt-20 bg-white/[0.04] border border-green-500/25 rounded-2xl overflow-hidden">
 
           {/* Team header */}
           <div className="flex items-center gap-4 px-5 py-5 border-b border-white/10">
