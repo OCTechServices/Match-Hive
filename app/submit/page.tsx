@@ -80,6 +80,9 @@ export default function SubmitPage() {
         return
       }
       setStatus('success')
+      if (typeof window !== 'undefined' && 'fbq' in window) {
+        ;(window as unknown as { fbq: (e: string, t: string) => void }).fbq('track', 'Lead')
+      }
     } catch {
       setErrorMsg('Network error. Please check your connection and try again.')
       setStatus('error')

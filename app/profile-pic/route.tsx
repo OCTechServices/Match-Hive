@@ -1,9 +1,8 @@
 import { ImageResponse } from 'next/og'
-import { NextRequest } from 'next/server'
 
 export const runtime = 'edge'
 
-export async function GET(_req: NextRequest) {
+export async function GET() {
   return new ImageResponse(
     (
       <div
