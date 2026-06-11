@@ -28,7 +28,7 @@ export default async function HomePage() {
         <p className="text-green-400 text-xs font-semibold uppercase tracking-widest mb-4">
           FIFA World Cup 2026 · June 11 – July 19
         </p>
-        <h1 className="text-4xl sm:text-5xl font-extrabold mb-4 leading-tight tracking-tight">
+        <h1 className="text-5xl sm:text-6xl font-bold mb-4 leading-tight tracking-tight font-display uppercase">
           Find Your Watch Party
         </h1>
         <p className="text-white/50 text-lg max-w-md mx-auto mb-10">

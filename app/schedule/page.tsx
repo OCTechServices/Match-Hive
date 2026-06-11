@@ -114,7 +114,7 @@ export default function SchedulePage() {
           {Object.entries(byDate).map(([day, matches]) => (
             <div key={day}>
               {/* Date header */}
-              <h3 className="text-base font-bold text-white/70 mb-4 flex items-center gap-3">
+              <h3 className="text-lg font-bold text-white/70 mb-4 flex items-center gap-3 font-display uppercase tracking-wide">
                 {formatDayHeader(day)}
                 <span className="text-xs font-normal text-white/25">
                   {matches.length} match{matches.length > 1 ? 'es' : ''}

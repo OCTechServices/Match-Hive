@@ -90,7 +90,7 @@ export default function SubmitPage() {
     return (
       <div className="max-w-lg mx-auto px-4 py-24 text-center">
         <p className="text-6xl mb-5">🎉</p>
-        <h1 className="text-2xl font-bold mb-3">You&apos;re on the list!</h1>
+        <h1 className="text-3xl font-bold mb-3 font-display uppercase tracking-wide">You&apos;re on the list!</h1>
         <p className="text-white/50 max-w-xs mx-auto">
           We received your submission and will review it within 24 hours.
           Your venue will appear on MatchHive once approved.
@@ -102,7 +102,7 @@ export default function SubmitPage() {
   return (
     <div className="max-w-lg mx-auto px-4 py-12">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">List Your Venue</h1>
+        <h1 className="text-4xl font-bold mb-2 font-display uppercase tracking-wide">List Your Venue</h1>
         <p className="text-white/50 text-sm">
           Free to list during World Cup 2026. Show up where fans are looking.
         </p>

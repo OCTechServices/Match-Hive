@@ -37,7 +37,7 @@ export default function TeamPicker({ featured, others, matchesByTeam }: Props) {
 
       {/* Prompt */}
       <div className="mb-7">
-        <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+        <h2 className="text-3xl sm:text-4xl font-bold tracking-tight font-display uppercase">
           Who are you rooting for?
         </h2>
         <p className="text-white/40 text-sm mt-1">

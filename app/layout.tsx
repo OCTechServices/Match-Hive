@@ -1,10 +1,19 @@
 import type { Metadata } from 'next'
-import { Geist } from 'next/font/google'
+import { Inter, Oswald } from 'next/font/google'
 import Link from 'next/link'
 import NavLogo from '@/components/NavLogo'
 import './globals.css'
 
-const geist = Geist({ subsets: ['latin'], variable: '--font-geist-sans' })
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+})
+
+const oswald = Oswald({
+  subsets: ['latin'],
+  weight: ['500', '600', '700'],
+  variable: '--font-oswald',
+})
 
 export const metadata: Metadata = {
   title: 'Match-Hive — FIFA World Cup 2026 Watch Parties',
@@ -14,8 +23,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${geist.variable} h-full`}>
-      <body className="min-h-full flex flex-col bg-[#080f0b] text-white font-sans">
+    <html lang="en" className={`${inter.variable} ${oswald.variable} h-full`}>
+      <body className="min-h-full flex flex-col bg-[#080f0b] text-white font-sans antialiased">
 
         {/* ── Top nav ── */}
         <header className="sticky top-0 z-50 border-b border-white/10 bg-[#080f0b]/90 backdrop-blur">
@@ -38,7 +47,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 List Venue
               </Link>
             </nav>
-            {/* Mobile — show List Venue button only (bottom nav handles the rest) */}
+            {/* Mobile */}
             <Link
               href="/submit"
               className="sm:hidden bg-green-600 hover:bg-green-500 text-white px-3 py-1.5 rounded-full text-xs font-medium transition-colors"
@@ -48,10 +57,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
         </header>
 
-        {/* ── Page content (extra bottom padding on mobile for bottom nav) ── */}
         <main className="flex-1 pb-20 sm:pb-0">{children}</main>
 
-        {/* ── Desktop footer ── */}
+        {/* Desktop footer */}
         <footer className="hidden sm:block border-t border-white/10 py-8 text-center text-white/30 text-xs">
           <p>Match-Hive · FIFA World Cup 2026 · June 11 – July 19, 2026</p>
           <p className="mt-1">
@@ -61,7 +69,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </p>
         </footer>
 
-        {/* ── Mobile bottom tab bar ── */}
+        {/* Mobile bottom tab bar */}
         <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#080f0b]/95 backdrop-blur border-t border-white/10 flex">
           <Link href="/" className="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 text-white/50 hover:text-white active:text-green-400 transition-colors">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
