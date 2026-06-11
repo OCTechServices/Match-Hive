@@ -1,12 +1,12 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
+// Clerk's clerkMiddleware uses Node.js built-ins incompatible with Vercel Edge Runtime.
+// Admin route protection is handled at the page level via auth() from @clerk/nextjs/server.
+// This middleware is intentionally a passthrough.
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
-const isAdminRoute = createRouteMatcher(['/admin(.*)'])
-
-export default clerkMiddleware(async (auth, req) => {
-  if (isAdminRoute(req)) {
-    await auth.protect()
-  }
-})
+export function middleware(_request: NextRequest) {
+  return NextResponse.next()
+}
 
 export const config = {
   matcher: [
