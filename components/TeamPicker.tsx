@@ -142,7 +142,7 @@ export default function TeamPicker({ featured, others, matchesByTeam }: Props) {
               Save to My Calendar
             </a>
             <p className="text-[11px] text-white/30 text-center mt-2">
-              Includes a 5-min reminder before each kickoff
+              Includes 15-min and 5-min reminders before each kickoff
             </p>
           </div>
 

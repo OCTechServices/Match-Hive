@@ -78,6 +78,11 @@ export async function GET(request: NextRequest) {
       alarms: [
         {
           action: 'display',
+          description: `Kickoff soon: ${match.homeTeam} vs ${match.awayTeam}`,
+          trigger: { minutes: 15, before: true },
+        },
+        {
+          action: 'display',
           description: `Kickoff in 5 minutes: ${match.homeTeam} vs ${match.awayTeam}`,
           trigger: { minutes: 5, before: true },
         },
