@@ -91,7 +91,7 @@ export default function Image() {
 
         {/* Pills */}
         <div style={{ display: 'flex', gap: 16 }}>
-          {['Find Venues', 'Team Schedules', 'Live Bracket'].map((label) => (
+          {['Live Bracket', 'Find Venues', 'Team Schedules'].map((label) => (
             <div
               key={label}
               style={{
