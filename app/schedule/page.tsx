@@ -1,6 +1,18 @@
+import type { Metadata } from 'next'
 import { TEAMS, MATCHES } from '@/data/wc2026'
 import type { Match, Team } from '@/types'
 import TeamPicker from '@/components/TeamPicker'
+
+export const metadata: Metadata = {
+  title: 'Match-Hive — FIFA World Cup 2026 Schedule & Team Calendars',
+  description:
+    'View the full FIFA World Cup 2026 group stage schedule. Pick your team and download their matches directly to your calendar with 15-min kickoff reminders.',
+  openGraph: {
+    title: 'World Cup 2026 Schedule — Match-Hive',
+    description:
+      'All 72 group stage matches. Pick your team and download the schedule to your calendar.',
+  },
+}
 
 const FEATURED_NAMES = [
   'Mexico', 'USA', 'Brazil', 'Argentina',
