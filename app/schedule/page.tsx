@@ -27,15 +27,15 @@ function TeamDownloadCard({ team }: { team: Team }) {
     <a
       href={`/api/ics?team=${encodeURIComponent(team.name)}`}
       download
-      className="group flex items-center gap-3 bg-white/[0.05] hover:bg-green-900/50 border border-white/10 hover:border-green-500/60 rounded-xl px-4 py-3 transition-all"
+      className="group flex items-center gap-3 bg-white/[0.05] hover:bg-green-900/50 border border-white/10 hover:border-green-500/60 rounded-xl px-4 py-4 sm:py-3 transition-all active:scale-[0.98]"
     >
-      <span className="text-2xl leading-none">{team.flag}</span>
+      <span className="text-3xl sm:text-2xl leading-none">{team.flag}</span>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold truncate">{team.name}</p>
+        <p className="text-base sm:text-sm font-semibold truncate">{team.name}</p>
         <p className="text-xs text-white/40">Group {team.group}</p>
       </div>
-      <span className="shrink-0 bg-green-700/60 group-hover:bg-green-600 text-green-100 text-[11px] font-bold px-2 py-1 rounded-md transition-colors">
-        ⬇ .ics
+      <span className="shrink-0 bg-green-700/60 group-hover:bg-green-600 text-green-100 text-xs font-bold px-2.5 py-1.5 rounded-lg transition-colors">
+        ⬇ Save
       </span>
     </a>
   )
@@ -104,7 +104,7 @@ export default function SchedulePage() {
           </h2>
           <div className="flex-1 h-px bg-white/10" />
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {allTeamsSorted.map((team) => (
             <TeamDownloadCard key={team.name} team={team} />
           ))}

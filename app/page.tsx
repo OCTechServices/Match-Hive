@@ -1,8 +1,9 @@
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 
-export const revalidate = 120 // refresh venue listings every 2 minutes
 import type { Business } from '@/types'
+
+export const revalidate = 120 // refresh venue listings every 2 minutes
 
 async function getBusinesses(): Promise<Business[]> {
   const { data } = await supabase
@@ -34,16 +35,16 @@ export default async function HomePage() {
           Bars, restaurants, and venues showing every match.
           Download your team&apos;s schedule with 15-min reminders.
         </p>
-        <div className="flex gap-3 justify-center flex-wrap">
+        <div className="flex flex-col sm:flex-row gap-3 justify-center w-full sm:w-auto px-4 sm:px-0">
           <Link
             href="/schedule"
-            className="bg-green-600 hover:bg-green-500 text-white px-6 py-3 rounded-full font-semibold transition-colors"
+            className="bg-green-600 hover:bg-green-500 text-white px-6 py-3.5 sm:py-3 rounded-full font-semibold transition-colors text-center"
           >
             📅 Team Schedules
           </Link>
           <Link
             href="/bracket"
-            className="border border-white/20 hover:border-white/40 hover:bg-white/5 text-white px-6 py-3 rounded-full font-semibold transition-colors"
+            className="border border-white/20 hover:border-white/40 hover:bg-white/5 text-white px-6 py-3.5 sm:py-3 rounded-full font-semibold transition-colors text-center"
           >
             🏆 Live Bracket
           </Link>
