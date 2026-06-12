@@ -17,7 +17,7 @@ function fmt(utc: string, type: 'date' | 'time'): string {
   }
   return new Date(utc).toLocaleTimeString('en-US', {
     hour: 'numeric', minute: '2-digit',
-    timeZone: 'America/Los_Angeles', timeZoneName: 'short',
+    timeZone: 'America/New_York', timeZoneName: 'short',
   })
 }
 

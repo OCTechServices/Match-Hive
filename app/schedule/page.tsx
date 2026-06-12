@@ -33,7 +33,7 @@ function formatDayHeader(dateStr: string): string {
 function formatMatchTime(utc: string): string {
   return new Date(utc).toLocaleTimeString('en-US', {
     hour: 'numeric', minute: '2-digit',
-    timeZone: 'America/Los_Angeles', timeZoneName: 'short',
+    timeZone: 'America/New_York', timeZoneName: 'short',
   })
 }
 
