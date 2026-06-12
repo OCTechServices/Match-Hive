@@ -12,7 +12,7 @@ interface Props {
 function fmt(utc: string, type: 'date' | 'time'): string {
   if (type === 'date') {
     return new Date(utc).toLocaleDateString('en-US', {
-      weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC',
+      weekday: 'short', month: 'short', day: 'numeric', timeZone: 'America/New_York',
     })
   }
   return new Date(utc).toLocaleTimeString('en-US', {

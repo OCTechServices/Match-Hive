@@ -101,7 +101,7 @@ export default function SchedulePage() {
   )
   const byDate: Record<string, Match[]> = {}
   for (const m of sorted) {
-    const day = m.dateUtc.slice(0, 10)
+    const day = new Date(m.dateUtc).toLocaleDateString('en-CA', { timeZone: 'America/New_York' })
     if (!byDate[day]) byDate[day] = []
     byDate[day].push(m)
   }
