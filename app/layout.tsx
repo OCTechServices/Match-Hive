@@ -41,6 +41,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/bracket" className="text-white/60 hover:text-white transition-colors">
                 Bracket
               </Link>
+              <Link href="/standings" className="text-white/60 hover:text-white transition-colors">
+                Standings
+              </Link>
               <Link
                 href="/submit"
                 className="bg-green-600 hover:bg-green-500 text-white px-4 py-1.5 rounded-full font-medium transition-colors"
@@ -66,6 +69,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <p className="mt-1">
             <Link href="/schedule" className="hover:text-white/60 transition-colors mx-2">Schedule</Link>
             <Link href="/bracket" className="hover:text-white/60 transition-colors mx-2">Bracket</Link>
+            <Link href="/standings" className="hover:text-white/60 transition-colors mx-2">Standings</Link>
             <Link href="/submit" className="hover:text-white/60 transition-colors mx-2">List Venue</Link>
           </p>
         </footer>
@@ -93,6 +97,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z"/>
             </svg>
             <span className="text-[10px] font-medium">Bracket</span>
+          </Link>
+          <Link href="/standings" className="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 text-white/50 hover:text-white active:text-green-400 transition-colors">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <line x1="3" y1="9" x2="21" y2="9"/>
+              <line x1="3" y1="15" x2="21" y2="15"/>
+              <line x1="9" y1="9" x2="9" y2="21"/>
+            </svg>
+            <span className="text-[10px] font-medium">Standings</span>
           </Link>
           <Link href="/submit" className="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 text-white/50 hover:text-white active:text-green-400 transition-colors">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">

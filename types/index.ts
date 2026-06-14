@@ -18,6 +18,8 @@ export interface Match {
   round: 'group' | 'r32' | 'r16' | 'qf' | 'sf' | 'final'
   group?: string        // "A" – "L"
   matchday?: number     // 1 | 2 | 3
+  homeScore?: number | null  // null or undefined = not yet played
+  awayScore?: number | null
 }
 
 export interface Business {

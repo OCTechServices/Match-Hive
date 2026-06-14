@@ -37,10 +37,71 @@ function formatMatchTime(utc: string): string {
   })
 }
 
-// ── Match card — flag-first, balanced layout ────────────────────────────
-function MatchCard({ match }: { match: Match }) {
+// ── Live scores ────────────────────────────────────────────────────────
+interface ScoreData {
+  homeScore: number | null
+  awayScore: number | null
+  status: string // 'FINISHED' | 'IN_PLAY' | 'PAUSED' | 'TIMED' | 'SCHEDULED'
+}
+
+// football-data.org names that differ from our TEAMS names
+const FD_NAME_MAP: Record<string, string> = {
+  'United States': 'USA',
+  'Korea Republic': 'South Korea',
+  "Côte d'Ivoire": 'Ivory Coast',
+  'Türkiye': 'Turkiye',
+  'Turkey': 'Turkiye',
+  'Bosnia-Herzegovina': 'Bosnia and Herzegovina',
+  'Bosnia & Herzegovina': 'Bosnia and Herzegovina',
+  'Cape Verde Islands': 'Cape Verde',
+  'Congo DR': 'DR Congo',
+}
+
+async function fetchScores(): Promise<Record<string, ScoreData>> {
+  const apiKey = process.env.FOOTBALL_DATA_API_KEY
+  if (!apiKey) return {}
+
+  try {
+    const res = await fetch(
+      'https://api.football-data.org/v4/competitions/WC/matches',
+      {
+        headers: { 'X-Auth-Token': apiKey },
+        next: { revalidate: 300 },
+      }
+    )
+    if (!res.ok) return {}
+
+    const data = await res.json()
+    const lookup: Record<string, ScoreData> = {}
+
+    for (const m of data.matches ?? []) {
+      const scoreData: ScoreData = {
+        homeScore: m.score?.fullTime?.home ?? null,
+        awayScore: m.score?.fullTime?.away ?? null,
+        status: m.status,
+      }
+      // Primary key: normalized UTC datetime (guards against seconds/format differences)
+      lookup[(m.utcDate as string).substring(0, 16)] = scoreData
+      // Fallback key: normalized team names (guards against kickoff time discrepancies)
+      const home = FD_NAME_MAP[m.homeTeam?.name] ?? m.homeTeam?.name ?? ''
+      const away = FD_NAME_MAP[m.awayTeam?.name] ?? m.awayTeam?.name ?? ''
+      if (home && away) lookup[`${home}|${away}`] = scoreData
+    }
+
+    return lookup
+  } catch {
+    return {}
+  }
+}
+
+// ── Match card ─────────────────────────────────────────────────────────
+function MatchCard({ match, score }: { match: Match; score?: ScoreData }) {
   const home = teamMap[match.homeTeam]
   const away = teamMap[match.awayTeam]
+
+  const isFinished  = score?.status === 'FINISHED' && score.homeScore != null
+  const isLive      = score?.status === 'IN_PLAY'  && score.homeScore != null
+  const isHalfTime  = score?.status === 'PAUSED'   && score.homeScore != null
 
   return (
     <div className="bg-white/[0.04] hover:bg-white/[0.07] border border-white/10 hover:border-white/20 rounded-2xl px-5 py-4 transition-colors">
@@ -55,7 +116,30 @@ function MatchCard({ match }: { match: Match }) {
 
         {/* Middle */}
         <div className="flex flex-col items-center gap-1.5">
-          <span className="text-[11px] font-bold uppercase tracking-widest text-white/25">vs</span>
+          {isFinished ? (
+            <>
+              <span className="text-xl sm:text-2xl font-bold tracking-tight">
+                {score!.homeScore} – {score!.awayScore}
+              </span>
+              <span className="text-[9px] font-semibold text-white/30 uppercase tracking-wide">FT</span>
+            </>
+          ) : isLive ? (
+            <>
+              <span className="text-xl sm:text-2xl font-bold tracking-tight text-green-400">
+                {score!.homeScore} – {score!.awayScore}
+              </span>
+              <span className="text-[9px] font-bold text-green-400 uppercase tracking-wide animate-pulse">LIVE</span>
+            </>
+          ) : isHalfTime ? (
+            <>
+              <span className="text-xl sm:text-2xl font-bold tracking-tight text-amber-400">
+                {score!.homeScore} – {score!.awayScore}
+              </span>
+              <span className="text-[9px] font-semibold text-amber-400 uppercase tracking-wide">HT</span>
+            </>
+          ) : (
+            <span className="text-[11px] font-bold uppercase tracking-widest text-white/25">vs</span>
+          )}
           <span className="text-[10px] bg-white/8 border border-white/10 text-white/40 font-medium px-2.5 py-0.5 rounded-full">
             Group {match.group}
           </span>
@@ -82,7 +166,9 @@ function MatchCard({ match }: { match: Match }) {
 }
 
 // ── Page ───────────────────────────────────────────────────────────────
-export default function SchedulePage() {
+export default async function SchedulePage() {
+  const scores = await fetchScores()
+
   const featured = FEATURED_NAMES.map((n) => teamMap[n]).filter(Boolean) as Team[]
   const others = TEAMS
     .filter((t) => !FEATURED_NAMES.includes(t.name))
@@ -95,7 +181,7 @@ export default function SchedulePage() {
       .sort((a, b) => new Date(a.dateUtc).getTime() - new Date(b.dateUtc).getTime())
   }
 
-  // Group all matches by calendar date (UTC)
+  // Group all matches by calendar date (ET)
   const sorted = [...MATCHES].sort(
     (a, b) => new Date(a.dateUtc).getTime() - new Date(b.dateUtc).getTime()
   )
@@ -125,7 +211,6 @@ export default function SchedulePage() {
         <div className="space-y-10">
           {Object.entries(byDate).map(([day, matches]) => (
             <div key={day}>
-              {/* Date header */}
               <h3 className="text-lg font-bold text-white/70 mb-4 flex items-center gap-3 font-display uppercase tracking-wide">
                 {formatDayHeader(day)}
                 <span className="text-xs font-normal text-white/25">
@@ -135,7 +220,14 @@ export default function SchedulePage() {
 
               <div className="grid gap-3 sm:grid-cols-2">
                 {matches.map((m) => (
-                  <MatchCard key={m.id} match={m} />
+                  <MatchCard
+                    key={m.id}
+                    match={m}
+                    score={
+                      scores[m.dateUtc.substring(0, 16)] ??
+                      scores[`${m.homeTeam}|${m.awayTeam}`]
+                    }
+                  />
                 ))}
               </div>
             </div>
