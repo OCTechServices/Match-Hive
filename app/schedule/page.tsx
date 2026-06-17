@@ -192,6 +192,10 @@ export default async function SchedulePage() {
     byDate[day].push(m)
   }
 
+  const todayET = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' })
+  const upcomingDays = Object.entries(byDate).filter(([day]) => day >= todayET)
+  const pastDays = Object.entries(byDate).filter(([day]) => day < todayET).reverse()
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-10">
 
@@ -209,7 +213,7 @@ export default async function SchedulePage() {
         </div>
 
         <div className="space-y-10">
-          {Object.entries(byDate).map(([day, matches]) => (
+          {upcomingDays.map(([day, matches]) => (
             <div key={day}>
               <h3 className="text-lg font-bold text-white/70 mb-4 flex items-center gap-3 font-display uppercase tracking-wide">
                 {formatDayHeader(day)}
@@ -217,7 +221,6 @@ export default async function SchedulePage() {
                   {matches.length} match{matches.length > 1 ? 'es' : ''}
                 </span>
               </h3>
-
               <div className="grid gap-3 sm:grid-cols-2">
                 {matches.map((m) => (
                   <MatchCard
@@ -232,6 +235,38 @@ export default async function SchedulePage() {
               </div>
             </div>
           ))}
+
+          {pastDays.length > 0 && (
+            <>
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-px bg-white/10" />
+                <span className="text-xs font-semibold uppercase tracking-widest text-white/20 px-2">Results</span>
+                <div className="flex-1 h-px bg-white/10" />
+              </div>
+              {pastDays.map(([day, matches]) => (
+                <div key={day}>
+                  <h3 className="text-lg font-bold text-white/70 mb-4 flex items-center gap-3 font-display uppercase tracking-wide">
+                    {formatDayHeader(day)}
+                    <span className="text-xs font-normal text-white/25">
+                      {matches.length} match{matches.length > 1 ? 'es' : ''}
+                    </span>
+                  </h3>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {matches.map((m) => (
+                      <MatchCard
+                        key={m.id}
+                        match={m}
+                        score={
+                          scores[m.dateUtc.substring(0, 16)] ??
+                          scores[`${m.homeTeam}|${m.awayTeam}`]
+                        }
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
         </div>
       </section>
 
