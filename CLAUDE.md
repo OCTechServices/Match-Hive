@@ -2,7 +2,7 @@
 
 # match-hive — Project Context
 # Tier 1 — Enterprise Grade | OCTech Services
-# Last Updated: 2026-06-12
+# Last Updated: 2026-06-16
 
 ---
 
@@ -39,10 +39,11 @@
 
 | Route | Type | Description |
 |---|---|---|
-| `/` | Static (2m revalidate) | Landing page |
-| `/schedule` | Static (2m revalidate) | Full group stage schedule, date-grouped, with TeamPicker |
+| `/` | Static | Landing page — hero + 3 CTAs (Schedule, Bracket, Standings) |
+| `/schedule` | Dynamic (5m revalidate) | Full group stage schedule with live scores (FT/LIVE/HT) + TeamPicker |
+| `/standings` | Dynamic (5m revalidate) | Live group standings — 12 groups, auto-updates via football-data.org |
 | `/bracket` | Static | Live bracket viewer |
-| `/submit` | Static | Fan submission form |
+| `/submit` | Static | Venue submission form — preserved but hidden from nav (re-enable by adding nav links) |
 | `/api/ics` | Dynamic | Returns `.ics` calendar file for a given team. CORS open — called by external Lovable frontend |
 | `/api/bracket` | Dynamic | Bracket data |
 | `/api/teams` | Dynamic | Team list |
@@ -55,6 +56,7 @@
 **Key components:**
 - `components/TeamPicker.tsx` — client component, team selector + per-team schedule card + ICS download CTA
 - `components/NavLogo.tsx` — nav logo
+- `lib/standings.ts` — pure `computeGroupStandings()` utility + `StandingRow` type (local fallback, not used in production flow)
 
 ---
 
@@ -67,6 +69,7 @@
 | Meta Pixel `1538010084523329` | Analytics / lead tracking | PageView + Lead events on landing page |
 | Vercel | Hosting + CI/CD | Push to `main` = auto-deploy |
 | Lovable (external) | External frontend consumer | Calls `/api/ics` — CORS open to all origins |
+| football-data.org (free tier) | Live scores + standings | `FOOTBALL_DATA_API_KEY` env var. Feeds `/schedule` (scores) and `/standings`. 5-min cache. Rate limit: 10 req/min (well within usage). |
 
 ---
 
