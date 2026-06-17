@@ -42,6 +42,12 @@ export default function HomePage() {
           >
             Live Bracket
           </Link>
+          <Link
+            href="/standings"
+            className="border border-white/15 hover:border-white/30 hover:bg-white/[0.05] active:scale-[0.97] text-white/70 hover:text-white px-7 py-3.5 sm:py-3 rounded-full font-semibold transition-all text-center"
+          >
+            Standings
+          </Link>
         </div>
       </div>
     </section>
