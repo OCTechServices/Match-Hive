@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
     const matchday = match.matchday ? `, Matchday ${match.matchday}` : ''
 
     return {
-      uid: `wps-${match.id}@watch-party-sphere`,
+      uid: `mh-${match.id}@match-hive`,
       start: [
         start.getUTCFullYear(),
         start.getUTCMonth() + 1,

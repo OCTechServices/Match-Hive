@@ -19,7 +19,7 @@ const oswald = Oswald({
 export const metadata: Metadata = {
   title: 'Match-Hive — FIFA World Cup 2026 Watch Parties',
   description:
-    'Find the best World Cup 2026 watch party venues near you. Browse listings, download your team schedule with reminders, and track the live knockout bracket.',
+    'Your FIFA World Cup 2026 hub — download your team\'s match schedule with kickoff reminders and track the live knockout bracket.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -44,20 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/standings" className="text-white/60 hover:text-white transition-colors">
                 Standings
               </Link>
-              <Link
-                href="/submit"
-                className="bg-green-600 hover:bg-green-500 text-white px-4 py-1.5 rounded-full font-medium transition-colors"
-              >
-                List Venue
-              </Link>
             </nav>
-            {/* Mobile */}
-            <Link
-              href="/submit"
-              className="sm:hidden bg-green-600 hover:bg-green-500 text-white px-3 py-1.5 rounded-full text-xs font-medium transition-colors"
-            >
-              + List Venue
-            </Link>
           </div>
         </header>
 
@@ -70,7 +57,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Link href="/schedule" className="hover:text-white/60 transition-colors mx-2">Schedule</Link>
             <Link href="/bracket" className="hover:text-white/60 transition-colors mx-2">Bracket</Link>
             <Link href="/standings" className="hover:text-white/60 transition-colors mx-2">Standings</Link>
-            <Link href="/submit" className="hover:text-white/60 transition-colors mx-2">List Venue</Link>
           </p>
         </footer>
 
@@ -106,13 +92,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <line x1="9" y1="9" x2="9" y2="21"/>
             </svg>
             <span className="text-[10px] font-medium">Standings</span>
-          </Link>
-          <Link href="/submit" className="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 text-white/50 hover:text-white active:text-green-400 transition-colors">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
-              <circle cx="12" cy="10" r="3"/>
-            </svg>
-            <span className="text-[10px] font-medium">Venues</span>
           </Link>
         </nav>
 

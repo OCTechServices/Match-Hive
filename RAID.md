@@ -1,6 +1,6 @@
 # RAID Log: match-hive
 # Tier 1 — Enterprise Grade | OCTech Services
-# Last Updated: 2026-06-12
+# Last Updated: 2026-06-13
 
 ---
 
@@ -26,7 +26,7 @@
 | ID | Issue | Source | Priority | Status |
 |---|---|---|---|---|
 | I01 | `metadataBase` not set — OG/Twitter image URLs resolve to localhost in build output | Build warning | Low | Open — pre-existing, non-blocking |
-| I02 | ICS uid uses old project name `watch-party-sphere` — may cause duplicate calendar entries if user re-downloads | Code review | Low | Open |
+| I02 | ICS uid uses old project name `watch-party-sphere` — may cause duplicate calendar entries if user re-downloads | Code review | Low | Resolved 2026-06-16 — uid updated to `mh-{id}@match-hive` |
 
 ## Dependencies
 | ID | Dependency | Type | Notes |
@@ -38,3 +38,4 @@
 | D05 | Meta Pixel 1538010084523329 | Analytics | PageView + Lead events — embedded in layout |
 | D06 | Lovable (external frontend) | API consumer | Calls /api/ics via open CORS — coordinate before restricting CORS |
 | D07 | Vercel | Hosting / CI | Auto-deploy on push to main |
+| D08 | football-data.org (free tier) | Live data | `FOOTBALL_DATA_API_KEY` — feeds /schedule scores and /standings. Fails silently if unavailable. |
