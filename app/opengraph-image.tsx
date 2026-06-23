@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og'
 
 export const runtime = 'edge'
-export const alt = 'Match-Hive — FIFA World Cup 2026 Watch Parties'
+export const alt = 'Match-Hive — FIFA World Cup 2026 Schedule Tracker'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -86,12 +86,12 @@ export default function Image() {
             marginBottom: 40,
           }}
         >
-          FIFA World Cup 2026 Watch Parties
+          FIFA World Cup 2026 Schedule Tracker
         </div>
 
         {/* Pills */}
         <div style={{ display: 'flex', gap: 16 }}>
-          {['Live Bracket', 'Find Venues', 'Team Schedules'].map((label) => (
+          {['Live Bracket', 'Standings', 'Team Schedules'].map((label) => (
             <div
               key={label}
               style={{
