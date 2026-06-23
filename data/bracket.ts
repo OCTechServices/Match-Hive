@@ -19,6 +19,10 @@ export interface BracketMatch {
   venue: string | null
   city: string | null
   status: 'upcoming' | 'live' | 'completed'
+  // Projected teams — set by /api/bracket when home_team/away_team are null.
+  // Based on current group standings. Absent once real teams are confirmed.
+  projected_home?: string | null
+  projected_away?: string | null
 }
 
 // Round labels (EN / ES)

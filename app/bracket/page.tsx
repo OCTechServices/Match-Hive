@@ -1,6 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { TEAMS } from '@/data/wc2026'
+
+const flagMap = Object.fromEntries(TEAMS.map(t => [t.name, t.flag]))
 
 interface BracketMatch {
   id: string
@@ -15,6 +18,8 @@ interface BracketMatch {
   venue: string
   city: string
   status: string
+  projected_home?: string | null
+  projected_away?: string | null
 }
 
 interface BracketData {
@@ -43,22 +48,31 @@ function formatDateTime(utc: string): string {
 }
 
 function MatchCard({ match }: { match: BracketMatch }) {
-  const home = match.home_team ?? 'TBD'
-  const away = match.away_team ?? 'TBD'
-  const hasTeams = !!(match.home_team || match.away_team)
+  const homeConfirmed = !!match.home_team
+  const awayConfirmed = !!match.away_team
+  const homeDisplay = match.home_team ?? match.projected_home ?? 'TBD'
+  const awayDisplay = match.away_team ?? match.projected_away ?? 'TBD'
+  const isHomeProjected = !homeConfirmed && !!match.projected_home
+  const isAwayProjected = !awayConfirmed && !!match.projected_away
+  const isProjected = !homeConfirmed && !awayConfirmed && (isHomeProjected || isAwayProjected)
   const hasScore = match.home_score !== null && match.away_score !== null
 
   return (
     <div
       className={`rounded-xl border p-3 transition-colors ${
-        hasTeams
+        homeConfirmed || awayConfirmed
           ? 'bg-white/[0.06] border-green-600/40'
-          : 'bg-white/[0.03] border-white/8 opacity-60'
+          : isProjected
+            ? 'bg-amber-500/[0.04] border-amber-500/30 border-dashed'
+            : 'bg-white/[0.03] border-white/8 opacity-60'
       }`}
     >
       <div className="flex items-center justify-between gap-2 mb-1">
-        <span className={`text-sm font-semibold leading-snug ${!match.home_team ? 'text-white/40' : ''}`}>
-          {home}
+        <span className={`flex items-center gap-1.5 text-sm font-semibold leading-snug ${
+          homeConfirmed ? '' : isHomeProjected ? 'text-amber-300/80' : 'text-white/40'
+        }`}>
+          {flagMap[homeDisplay] && <span className="text-base leading-none">{flagMap[homeDisplay]}</span>}
+          {homeDisplay}
         </span>
         {hasScore && (
           <span className={`text-sm font-bold ${match.winner === match.home_team ? 'text-green-400' : 'text-white/40'}`}>
@@ -67,8 +81,11 @@ function MatchCard({ match }: { match: BracketMatch }) {
         )}
       </div>
       <div className="flex items-center justify-between gap-2 mb-2">
-        <span className={`text-sm font-semibold leading-snug ${!match.away_team ? 'text-white/40' : ''}`}>
-          {away}
+        <span className={`flex items-center gap-1.5 text-sm font-semibold leading-snug ${
+          awayConfirmed ? '' : isAwayProjected ? 'text-amber-300/80' : 'text-white/40'
+        }`}>
+          {flagMap[awayDisplay] && <span className="text-base leading-none">{flagMap[awayDisplay]}</span>}
+          {awayDisplay}
         </span>
         {hasScore && (
           <span className={`text-sm font-bold ${match.winner === match.away_team ? 'text-green-400' : 'text-white/40'}`}>
@@ -82,6 +99,11 @@ function MatchCard({ match }: { match: BracketMatch }) {
       <p className="text-[11px] text-white/25 leading-snug mt-0.5">
         {match.venue}, {match.city}
       </p>
+      {isProjected && (
+        <p className="text-[10px] text-amber-500/50 font-medium uppercase tracking-wide mt-1.5">
+          Projected
+        </p>
+      )}
     </div>
   )
 }
@@ -116,6 +138,10 @@ export default function BracketPage() {
     )
   }
 
+  const hasProjections = (data.bracket['r32'] ?? []).some(
+    m => m.projected_home || m.projected_away
+  )
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
       <div className="mb-10">
@@ -127,6 +153,13 @@ export default function BracketPage() {
           </span>
         </p>
       </div>
+
+      {hasProjections && (
+        <div className="mb-8 rounded-lg bg-amber-500/[0.06] border border-amber-500/20 px-4 py-3 text-[12px] text-amber-400/70 leading-relaxed">
+          <span className="font-semibold text-amber-400/90">Projected matchups</span> are based on current group standings and will update as matches are played.
+          Third-place qualifier slots and later rounds shown once confirmed. Subject to change.
+        </div>
+      )}
 
       {ROUND_CONFIG.map(({ key, label, cols }) => {
         const matches = data.bracket[key]
