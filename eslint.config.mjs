@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Python virtualenv and content engine output
+    "scripts/content-engine/venv/**",
+    "scripts/content-engine/output/**",
   ]),
 ]);
 

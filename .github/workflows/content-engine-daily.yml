@@ -1,11 +1,26 @@
 name: Content Engine — Daily Publish
 
+# Cadence by platform:
+#   Instagram — once daily at 23:00 UTC (6 PM ET) — full day recap after results are in
+#   Twitter   — every 4h on match days: 11, 15, 19, 23 UTC (6AM/10AM/2PM/6PM ET)
+#               Twitter handles reactive score/result content throughout the day
+#
+# After group stage ends (June 28): both platforms drop to once daily at 23:00 UTC
+#
+# Switch: set TWITTER_ONLY=true on the 11, 15, 19 UTC runs; full run at 23 UTC
+
 on:
   schedule:
-    # 3 PM UTC = 8 AM PDT (UTC-7, summer)
-    # Change to 4 PM UTC in winter (PST = UTC-8)
-    - cron: '0 15 * * *'
-  workflow_dispatch:  # manual trigger for backfill or testing
+    - cron: '0 11 * * *'   # Twitter only — 6 AM ET
+    - cron: '0 15 * * *'   # Twitter only — 10 AM ET
+    - cron: '0 19 * * *'   # Twitter only — 2 PM ET
+    - cron: '0 23 * * *'   # Full run (IG + Twitter + Facebook copy) — 6 PM ET
+  workflow_dispatch:
+    inputs:
+      twitter_only:
+        description: 'Twitter only (skip IG render + publish)'
+        required: false
+        default: 'false'
 
 jobs:
   publish:
@@ -26,7 +41,7 @@ jobs:
           pip install -r requirements.txt
           playwright install chromium
 
-      - name: Run content engine (generate + publish)
+      - name: Run content engine
         working-directory: scripts/content-engine
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -38,7 +53,14 @@ jobs:
           TWITTER_API_SECRET: ${{ secrets.MATCH_HIVE_TWITTER_API_SECRET }}
           TWITTER_ACCESS_TOKEN: ${{ secrets.MATCH_HIVE_TWITTER_ACCESS_TOKEN }}
           TWITTER_ACCESS_SECRET: ${{ secrets.MATCH_HIVE_TWITTER_ACCESS_SECRET }}
-        run: python main.py
+          # Full run at 23 UTC only — Twitter-only for 11/15/19 UTC runs
+          TWITTER_ONLY: ${{ (github.event.schedule == '0 11 * * *' || github.event.schedule == '0 15 * * *' || github.event.schedule == '0 19 * * *') && 'true' || github.event.inputs.twitter_only || 'false' }}
+        run: |
+          if [ "$TWITTER_ONLY" = "true" ]; then
+            python main.py --twitter-only
+          else
+            python main.py
+          fi
 
       - name: Commit updated schedule files
         run: |

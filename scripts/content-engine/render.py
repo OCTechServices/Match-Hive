@@ -4,6 +4,7 @@ Match-Hive branded templates: dark green + #4ade80 accent
 """
 
 import asyncio
+import json
 import re
 from pathlib import Path
 from playwright.async_api import async_playwright
@@ -50,26 +51,29 @@ async def _render_post(page, post: dict, index: int) -> Path:
             await locator.evaluate("el => el.classList.add('hidden')")
 
     # Inject content
+    eyebrow = post.get("eyebrow", "FIFA World Cup 2026")
     if template_key == "preview":
-        await page.locator("#preview-hook").evaluate(f"el => el.textContent = {repr(hook)}")
-        await page.locator("#preview-body").evaluate(f"el => el.textContent = {repr(body)}")
+        await page.locator("#preview-eyebrow").evaluate(f"el => el.textContent = {json.dumps(eyebrow)}")
+        await page.locator("#preview-hook").evaluate(f"el => el.textContent = {json.dumps(hook)}")
+        await page.locator("#preview-body").evaluate(f"el => el.textContent = {json.dumps(body)}")
 
     elif template_key == "result":
         home, score, away = _extract_score(hook)
         if score:
-            await page.locator("#result-home").evaluate(f"el => el.textContent = {repr(home)}")
-            await page.locator("#result-score").evaluate(f"el => el.textContent = {repr(score)}")
-            await page.locator("#result-away").evaluate(f"el => el.textContent = {repr(away)}")
-            await page.locator("#result-body").evaluate(f"el => el.textContent = {repr(body)}")
+            await page.locator("#result-eyebrow").evaluate(f"el => el.textContent = {json.dumps(eyebrow)}")
+            await page.locator("#result-home").evaluate(f"el => el.textContent = {json.dumps(home)}")
+            await page.locator("#result-score").evaluate(f"el => el.textContent = {json.dumps(score)}")
+            await page.locator("#result-away").evaluate(f"el => el.textContent = {json.dumps(away)}")
+            await page.locator("#result-body").evaluate(f"el => el.textContent = {json.dumps(body)}")
         else:
-            await page.locator("#result-home").evaluate("el => el.textContent = ''")
-            await page.locator("#result-score").evaluate(f"el => el.textContent = {repr(hook)}")
-            await page.locator("#result-away").evaluate("el => el.textContent = ''")
-            await page.locator("#result-body").evaluate(f"el => el.textContent = {repr(body)}")
+            await page.locator("#result-score-layout").evaluate("el => el.classList.add('hidden')")
+            await page.locator("#result-fallback-layout").evaluate("el => el.classList.remove('hidden')")
+            await page.locator("#result-hook-fallback").evaluate(f"el => el.textContent = {json.dumps(hook)}")
+            await page.locator("#result-body-fallback").evaluate(f"el => el.textContent = {json.dumps(body)}")
 
     elif template_key in ("standings", "bracket"):
-        await page.locator(f"#{template_key}-hook").evaluate(f"el => el.textContent = {repr(hook)}")
-        await page.locator(f"#{template_key}-body").evaluate(f"el => el.textContent = {repr(body)}")
+        await page.locator(f"#{template_key}-hook").evaluate(f"el => el.textContent = {json.dumps(hook)}")
+        await page.locator(f"#{template_key}-body").evaluate(f"el => el.textContent = {json.dumps(body)}")
 
     await page.locator(f"#tpl-{template_key}").screenshot(path=str(output_path))
     return output_path

@@ -13,6 +13,17 @@ IG_AGENT_PATH = Path(__file__).parent.parent.parent / ".claude" / "agents" / "ma
 TWITTER_AGENT_PATH = Path(__file__).parent.parent.parent / ".claude" / "agents" / "marketing" / "match-hive-twitter.md"
 
 
+def _parse_json(text: str) -> dict:
+    """Parse JSON from Claude response, stripping markdown fences if present."""
+    text = text.strip()
+    if text.startswith("```"):
+        text = text.split("```", 2)[1]
+        if text.startswith("json"):
+            text = text[4:]
+        text = text.rsplit("```", 1)[0]
+    return json.loads(text.strip())
+
+
 def _client() -> Anthropic:
     return Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 
@@ -52,8 +63,9 @@ Content angle: {angle}
 
 Return a single JSON object:
 {{
-  "hook": "Opening line — max 10 words, punchy fan voice, grabs attention",
-  "body": "2-3 sentences. Factual, specific, references real teams/results/stakes from the signal. No filler.",
+  "hook": "Opening line — max 10 words, punchy fan voice, grabs attention. Include flag emojis for teams (e.g. 🇧🇷 🇦🇷). If template is Result Recap, hook MUST be exactly 'Flag Team A X – Y Team B Flag' (e.g. '🇵🇹 Portugal 5 – 0 Uzbekistan 🇺🇿').",
+  "body": "2-3 sentences. Factual, specific, references real teams/results/stakes from the signal. No filler. Include flag emojis where natural.",
+  "eyebrow": "Short context label — e.g. 'Group C · Matchday 2' or 'Round of 32'",
   "cta": "Track every match → match-hive.vercel.app",
   "hashtags": "5-7 hashtags — always include #WorldCup2026 #FIFA2026, add specific team/match tags",
   "template": "<Match Preview | Result Recap | Standings Update | Bracket Update>",
@@ -64,6 +76,7 @@ Rules:
 - Hook is fan voice — like texting a friend who watches the same game, not a sports brand
 - Body is factual and specific — real teams, real stakes, real consequences
 - Never: "epic", "stunning", "incredible", "the beautiful game", generic hype
+- If template is "Result Recap": hook MUST be exactly "Team A X – Y Team B" (e.g. "Portugal 5 – 0 Uzbekistan"). Score format only — no narrative text in the hook.
 - If results exist: lead with the outcome or the upset
 - If preview: lead with what's at stake (elimination, group lead, revenge)
 - If knockout phase: lead with who advances and what's next
@@ -81,7 +94,7 @@ Return only the JSON object. No markdown, no explanation."""
         kwargs["system"] = system_prompt
 
     response = _client().messages.create(**kwargs)
-    post = json.loads(response.content[0].text.strip())
+    post = _parse_json(response.content[0].text)
 
     return {
         **post,
@@ -131,7 +144,7 @@ Return only the JSON object. No markdown."""
         kwargs["system"] = system_prompt
 
     response = _client().messages.create(**kwargs)
-    post = json.loads(response.content[0].text.strip())
+    post = _parse_json(response.content[0].text)
 
     return {
         **post,
@@ -175,7 +188,7 @@ Return only the JSON object."""
         temperature=0.6,
         messages=[{"role": "user", "content": prompt}],
     )
-    post = json.loads(response.content[0].text.strip())
+    post = _parse_json(response.content[0].text)
 
     return {
         **post,
