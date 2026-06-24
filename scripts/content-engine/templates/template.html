@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Match-Hive Template</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #080f0b;
+      width: 1080px;
+      height: 1080px;
+      overflow: hidden;
+    }
+    .card {
+      width: 1080px;
+      height: 1080px;
+      background: linear-gradient(160deg, #0d2117 0%, #080f0b 65%);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 64px;
+      position: relative;
+      overflow: hidden;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      width: 700px;
+      height: 700px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(74,222,128,0.06) 0%, transparent 70%);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+    .hidden { display: none !important; }
+    .wordmark {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .wordmark-text {
+      font-size: 28px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.5px;
+    }
+    .wordmark-text span { color: #4ade80; }
+    .center-zone {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 28px;
+      padding: 0 48px;
+    }
+    .hook {
+      color: #fff;
+      font-size: 58px;
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -1px;
+    }
+    .hook-accent { color: #4ade80; }
+    .body-text {
+      color: rgba(255,255,255,0.6);
+      font-size: 30px;
+      font-weight: 400;
+      line-height: 1.55;
+      max-width: 85%;
+    }
+    .cta {
+      color: rgba(74,222,128,0.7);
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      text-align: right;
+    }
+    .badge {
+      display: inline-block;
+      background: rgba(74,222,128,0.12);
+      border: 1px solid rgba(74,222,128,0.3);
+      color: #4ade80;
+      font-size: 16px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      padding: 8px 20px;
+      border-radius: 999px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Match Preview -->
+<div id="tpl-preview" class="card">
+  <div class="wordmark">
+    <svg width="44" height="44" viewBox="0 0 40 40" fill="none">
+      <path d="M20 3 L37 20 L20 37 L3 20 Z" stroke="#4ade80" stroke-width="2.2" stroke-linejoin="round"/>
+      <circle cx="20" cy="20" r="7.5" stroke="#4ade80" stroke-width="1.6"/>
+      <line x1="12.5" y1="20" x2="27.5" y2="20" stroke="#4ade80" stroke-width="1"/>
+      <line x1="20" y1="12.5" x2="20" y2="27.5" stroke="#4ade80" stroke-width="1"/>
+      <path d="M12.5 20 Q16 15 20 20 Q24 25 27.5 20" stroke="#4ade80" stroke-width="1" stroke-linecap="round"/>
+    </svg>
+    <div class="wordmark-text">Match<span>-Hive</span></div>
+    <div class="badge" style="margin-left:auto;">Tonight</div>
+  </div>
+  <div class="center-zone">
+    <h2 id="preview-hook" class="hook"></h2>
+    <p id="preview-body" class="body-text"></p>
+  </div>
+  <div class="cta">match-hive.vercel.app</div>
+</div>
+
+<!-- Result Recap -->
+<div id="tpl-result" class="card hidden">
+  <div class="wordmark">
+    <svg width="44" height="44" viewBox="0 0 40 40" fill="none">
+      <path d="M20 3 L37 20 L20 37 L3 20 Z" stroke="#4ade80" stroke-width="2.2" stroke-linejoin="round"/>
+      <circle cx="20" cy="20" r="7.5" stroke="#4ade80" stroke-width="1.6"/>
+      <line x1="12.5" y1="20" x2="27.5" y2="20" stroke="#4ade80" stroke-width="1"/>
+      <line x1="20" y1="12.5" x2="20" y2="27.5" stroke="#4ade80" stroke-width="1"/>
+      <path d="M12.5 20 Q16 15 20 20 Q24 25 27.5 20" stroke="#4ade80" stroke-width="1" stroke-linecap="round"/>
+    </svg>
+    <div class="wordmark-text">Match<span>-Hive</span></div>
+    <div class="badge" style="margin-left:auto; border-color:rgba(74,222,128,0.5); background:rgba(74,222,128,0.15);">Full Time</div>
+  </div>
+  <div class="center-zone" style="gap:20px;">
+    <div style="display:flex;align-items:center;justify-content:center;gap:40px;width:100%;">
+      <span id="result-home" style="color:rgba(255,255,255,0.85);font-size:38px;font-weight:700;flex:1;text-align:right;"></span>
+      <span id="result-score" style="color:#4ade80;font-size:80px;font-weight:900;letter-spacing:-2px;white-space:nowrap;"></span>
+      <span id="result-away" style="color:rgba(255,255,255,0.85);font-size:38px;font-weight:700;flex:1;text-align:left;"></span>
+    </div>
+    <p id="result-body" class="body-text" style="font-size:26px;"></p>
+  </div>
+  <div class="cta">match-hive.vercel.app</div>
+</div>
+
+<!-- Standings Update -->
+<div id="tpl-standings" class="card hidden">
+  <div class="wordmark">
+    <svg width="44" height="44" viewBox="0 0 40 40" fill="none">
+      <path d="M20 3 L37 20 L20 37 L3 20 Z" stroke="#4ade80" stroke-width="2.2" stroke-linejoin="round"/>
+      <circle cx="20" cy="20" r="7.5" stroke="#4ade80" stroke-width="1.6"/>
+      <line x1="12.5" y1="20" x2="27.5" y2="20" stroke="#4ade80" stroke-width="1"/>
+      <line x1="20" y1="12.5" x2="20" y2="27.5" stroke="#4ade80" stroke-width="1"/>
+      <path d="M12.5 20 Q16 15 20 20 Q24 25 27.5 20" stroke="#4ade80" stroke-width="1" stroke-linecap="round"/>
+    </svg>
+    <div class="wordmark-text">Match<span>-Hive</span></div>
+    <div class="badge" style="margin-left:auto;">Standings</div>
+  </div>
+  <div class="center-zone">
+    <h2 id="standings-hook" class="hook" style="font-size:52px;"></h2>
+    <p id="standings-body" class="body-text"></p>
+  </div>
+  <div class="cta">match-hive.vercel.app</div>
+</div>
+
+<!-- Bracket Update -->
+<div id="tpl-bracket" class="card hidden">
+  <div class="wordmark">
+    <svg width="44" height="44" viewBox="0 0 40 40" fill="none">
+      <path d="M20 3 L37 20 L20 37 L3 20 Z" stroke="#4ade80" stroke-width="2.2" stroke-linejoin="round"/>
+      <circle cx="20" cy="20" r="7.5" stroke="#4ade80" stroke-width="1.6"/>
+      <line x1="12.5" y1="20" x2="27.5" y2="20" stroke="#4ade80" stroke-width="1"/>
+      <line x1="20" y1="12.5" x2="20" y2="27.5" stroke="#4ade80" stroke-width="1"/>
+      <path d="M12.5 20 Q16 15 20 20 Q24 25 27.5 20" stroke="#4ade80" stroke-width="1" stroke-linecap="round"/>
+    </svg>
+    <div class="wordmark-text">Match<span>-Hive</span></div>
+    <div class="badge" style="margin-left:auto;">Bracket</div>
+  </div>
+  <div class="center-zone">
+    <h2 id="bracket-hook" class="hook" style="color:#4ade80;"></h2>
+    <p id="bracket-body" class="body-text"></p>
+  </div>
+  <div class="cta">match-hive.vercel.app</div>
+</div>
+
+</body>
+</html>

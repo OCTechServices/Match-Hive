@@ -1,0 +1,51 @@
+name: Content Engine — Daily Publish
+
+on:
+  schedule:
+    # 3 PM UTC = 8 AM PDT (UTC-7, summer)
+    # Change to 4 PM UTC in winter (PST = UTC-8)
+    - cron: '0 15 * * *'
+  workflow_dispatch:  # manual trigger for backfill or testing
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        working-directory: scripts/content-engine
+        run: |
+          pip install -r requirements.txt
+          playwright install chromium
+
+      - name: Run content engine (generate + publish)
+        working-directory: scripts/content-engine
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          FOOTBALL_DATA_API_KEY: ${{ secrets.FOOTBALL_DATA_API_KEY }}
+          IG_ACCESS_TOKEN: ${{ secrets.MATCH_HIVE_IG_ACCESS_TOKEN }}
+          IG_USER_ID: ${{ secrets.MATCH_HIVE_IG_USER_ID }}
+          IMGBB_API_KEY: ${{ secrets.IMGBB_API_KEY }}
+          TWITTER_API_KEY: ${{ secrets.MATCH_HIVE_TWITTER_API_KEY }}
+          TWITTER_API_SECRET: ${{ secrets.MATCH_HIVE_TWITTER_API_SECRET }}
+          TWITTER_ACCESS_TOKEN: ${{ secrets.MATCH_HIVE_TWITTER_ACCESS_TOKEN }}
+          TWITTER_ACCESS_SECRET: ${{ secrets.MATCH_HIVE_TWITTER_ACCESS_SECRET }}
+        run: python main.py
+
+      - name: Commit updated schedule files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add scripts/content-engine/output/schedule.json \
+                  scripts/content-engine/output/twitter_schedule.json \
+                  scripts/content-engine/output/facebook_copy.json || true
+          git diff --staged --quiet || git commit -m "chore: update content schedule [skip ci]"
+          git push || true

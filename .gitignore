@@ -39,3 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# content engine — rendered images excluded, schedule JSONs tracked
+scripts/content-engine/output/*.png
+scripts/content-engine/venv/
+scripts/content-engine/__pycache__/
+scripts/content-engine/**/__pycache__/
+scripts/content-engine/.env
