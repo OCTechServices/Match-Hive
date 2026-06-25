@@ -12,7 +12,9 @@ export const metadata: Metadata = {
   description: 'Live FIFA World Cup 2026 knockout bracket. Track the clear path and projected path to the Final.',
 }
 
-export const revalidate = 300
+// Dynamic rendering — avoids build-time API rate-limit failures during
+// concurrent static generation. The fetch below still caches for 300s.
+export const revalidate = 0
 
 // ── Team name normalisation (matches schedule page) ──────────────────────
 const FD_NAME_MAP: Record<string, string> = {
