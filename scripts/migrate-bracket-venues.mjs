@@ -4,8 +4,13 @@
  * Run: node scripts/migrate-bracket-venues.mjs
  */
 
-const SUPABASE_URL = 'https://xjmtyyqjgceogdeqgjbh.supabase.co'
-const SERVICE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhqbXR5eXFqZ2Nlb2dkZXFnamJoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MTE0NDk0NCwiZXhwIjoyMDk2NzIwOTQ0fQ.H39c9sIDzVnCiQfP2vbQFJMN-O525RJcUUrx_ih2-ho'
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+const SERVICE_KEY  = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+if (!SUPABASE_URL || !SERVICE_KEY) {
+  console.error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in environment')
+  process.exit(1)
+}
 
 const fixes = [
   // R32 — wrong venues
