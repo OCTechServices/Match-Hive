@@ -179,6 +179,13 @@ function MatchNode({ match }: { match: BracketMatch }) {
       borderRadius: 12, overflow: 'hidden', position: 'relative', flexShrink: 0,
       boxShadow: isLive ? '0 0 14px rgba(74,222,128,0.22)' : 'none',
     }}>
+      {hasProj && !isLive && (
+        <div className="animate-pulse" style={{
+          position: 'absolute', inset: 0, borderRadius: 12,
+          border: '1px dashed rgba(251,146,60,0.55)',
+          pointerEvents: 'none', zIndex: 1,
+        }} />
+      )}
       {/* Teams */}
       <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
         <TeamRow
