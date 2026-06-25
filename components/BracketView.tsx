@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { TEAMS } from '@/data/wc2026'
 import { R32_SEEDING } from '@/lib/bracket-seeding'
+import type { SeedRef } from '@/lib/bracket-seeding'
 import type { BracketMatch } from '@/data/bracket'
 
 const flagMap = Object.fromEntries(TEAMS.map(t => [t.name, t.flag]))
@@ -57,10 +58,15 @@ function formatMeta(utc: string): string {
   })
 }
 
+function seedLabel(s: SeedRef): string {
+  if (s.kind === 'group') return `${s.place === 1 ? '1st' : '2nd'} Group ${s.group}`
+  return `Best 3rd ${s.groups.join('/')}`
+}
+
 function getTbdLabel(match: BracketMatch, side: 'home' | 'away'): string {
   if (match.round === 'r32') {
-    const s = R32_SEEDING[match.slot]?.[side]
-    if (s) return `${s.place === 1 ? '1st' : '2nd'} Group ${s.group}`
+    const s = R32_SEEDING[match.id]?.[side]
+    if (s) return seedLabel(s)
   }
   return 'TBD'
 }
@@ -218,7 +224,7 @@ function MatchNode({ match, isFinal = false, fullWidth = false }: {
           fontSize: 8, fontWeight: 700, letterSpacing: '0.07em',
           color: 'rgba(255,255,255,0.18)',
         }}>
-          M{match.slot}
+          {match.id}
         </span>
         {isLive ? (
           <span className="animate-pulse" style={{
@@ -397,7 +403,7 @@ export default function BracketView({ matches }: { matches: BracketMatch[] }) {
         <h1 className="text-4xl font-bold mb-2 font-display uppercase tracking-wide">
           Knockout Bracket
         </h1>
-        <p className="text-white/40 text-sm">Starts June 29 · 32 teams, one trophy</p>
+        <p className="text-white/40 text-sm">Starts June 28 · 32 teams, one trophy</p>
       </div>
 
       {/* Legend */}

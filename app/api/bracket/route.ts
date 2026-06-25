@@ -78,16 +78,14 @@ export async function GET() {
   const enriched = (data as BracketMatch[]).map(match => {
     if (match.round !== 'r32') return match
     if (match.home_team && match.away_team) return match
-    const seeding = R32_SEEDING[match.slot]
+    const seeding = R32_SEEDING[match.id]
     if (!seeding) return match
+    const proj = (seed: typeof seeding.home) =>
+      seed.kind === 'group' ? (projections[seed.group]?.[seed.place - 1] ?? null) : null
     return {
       ...match,
-      projected_home: !match.home_team
-        ? (projections[seeding.home.group]?.[seeding.home.place - 1] ?? null)
-        : null,
-      projected_away: !match.away_team
-        ? (projections[seeding.away.group]?.[seeding.away.place - 1] ?? null)
-        : null,
+      projected_home: !match.home_team ? proj(seeding.home) : null,
+      projected_away: !match.away_team ? proj(seeding.away) : null,
     }
   })
 

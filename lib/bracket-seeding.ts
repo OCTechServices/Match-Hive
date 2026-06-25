@@ -1,25 +1,32 @@
-// R32 bracket seeding — maps each slot to the group positions that fill it.
-// Approximate FIFA 2026 bracket draw: adjacent groups pair against each other.
-// Slots 13–16 are reserved for the 8 best third-place teams — not projected.
-// If the official draw differs, update the entries below.
+// R32 bracket seeding — maps each FIFA match ID (M73–M88) to the group
+// positions that fill the home and away slots.
+// Source: Official FIFA 2026 World Cup knockout bracket draw.
 
-export interface GroupPosition {
-  group: string  // 'A' through 'L'
-  place: 1 | 2
+export type SeedRef =
+  | { kind: 'group';   group: string; place: 1 | 2 }   // e.g. '1st Group A'
+  | { kind: 'best3rd'; groups: string[] }               // e.g. 'Best 3rd A/B/C/D/F'
+
+export interface R32Seeding {
+  home: SeedRef
+  away: SeedRef
 }
 
-export const R32_SEEDING: Record<number, { home: GroupPosition; away: GroupPosition }> = {
-  1:  { home: { group: 'A', place: 1 }, away: { group: 'B', place: 2 } },
-  2:  { home: { group: 'B', place: 1 }, away: { group: 'A', place: 2 } },
-  3:  { home: { group: 'C', place: 1 }, away: { group: 'D', place: 2 } },
-  4:  { home: { group: 'D', place: 1 }, away: { group: 'C', place: 2 } },
-  5:  { home: { group: 'E', place: 1 }, away: { group: 'F', place: 2 } },
-  6:  { home: { group: 'F', place: 1 }, away: { group: 'E', place: 2 } },
-  7:  { home: { group: 'G', place: 1 }, away: { group: 'H', place: 2 } },
-  8:  { home: { group: 'H', place: 1 }, away: { group: 'G', place: 2 } },
-  9:  { home: { group: 'I', place: 1 }, away: { group: 'J', place: 2 } },
-  10: { home: { group: 'J', place: 1 }, away: { group: 'I', place: 2 } },
-  11: { home: { group: 'K', place: 1 }, away: { group: 'L', place: 2 } },
-  12: { home: { group: 'L', place: 1 }, away: { group: 'K', place: 2 } },
-  // 13–16: third-place qualifier slots — projection skipped
+// Keys are FIFA match IDs M73–M88
+export const R32_SEEDING: Record<string, R32Seeding> = {
+  M73: { home: { kind: 'group',   group: 'A', place: 2 },                   away: { kind: 'group',   group: 'B', place: 2 } },
+  M74: { home: { kind: 'group',   group: 'E', place: 1 },                   away: { kind: 'best3rd', groups: ['A','B','C','D','F'] } },
+  M75: { home: { kind: 'group',   group: 'F', place: 1 },                   away: { kind: 'group',   group: 'C', place: 2 } },
+  M76: { home: { kind: 'group',   group: 'C', place: 1 },                   away: { kind: 'group',   group: 'F', place: 2 } },
+  M77: { home: { kind: 'group',   group: 'I', place: 1 },                   away: { kind: 'best3rd', groups: ['C','D','F','G','H'] } },
+  M78: { home: { kind: 'group',   group: 'E', place: 2 },                   away: { kind: 'group',   group: 'I', place: 2 } },
+  M79: { home: { kind: 'group',   group: 'A', place: 1 },                   away: { kind: 'best3rd', groups: ['C','E','F','H','I'] } },
+  M80: { home: { kind: 'group',   group: 'L', place: 1 },                   away: { kind: 'best3rd', groups: ['E','H','I','J','K'] } },
+  M81: { home: { kind: 'group',   group: 'D', place: 1 },                   away: { kind: 'best3rd', groups: ['B','E','F','I','J'] } },
+  M82: { home: { kind: 'group',   group: 'G', place: 1 },                   away: { kind: 'best3rd', groups: ['A','E','H','I','J'] } },
+  M83: { home: { kind: 'group',   group: 'K', place: 2 },                   away: { kind: 'group',   group: 'L', place: 2 } },
+  M84: { home: { kind: 'group',   group: 'H', place: 1 },                   away: { kind: 'group',   group: 'J', place: 2 } },
+  M85: { home: { kind: 'group',   group: 'B', place: 1 },                   away: { kind: 'best3rd', groups: ['E','F','G','I','J'] } },
+  M86: { home: { kind: 'group',   group: 'J', place: 1 },                   away: { kind: 'group',   group: 'H', place: 2 } },
+  M87: { home: { kind: 'group',   group: 'K', place: 1 },                   away: { kind: 'best3rd', groups: ['D','E','I','J','L'] } },
+  M88: { home: { kind: 'group',   group: 'D', place: 2 },                   away: { kind: 'group',   group: 'G', place: 2 } },
 }

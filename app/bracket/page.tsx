@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { TEAMS, MATCHES } from '@/data/wc2026'
 import { supabase } from '@/lib/supabase'
-import { R32_SEEDING } from '@/lib/bracket-seeding'
+import { R32_SEEDING, type SeedRef } from '@/lib/bracket-seeding'
 import { computeGroupStandings } from '@/lib/standings'
 import type { BracketMatch } from '@/data/bracket'
 import type { Match } from '@/types'
@@ -88,19 +88,20 @@ export default async function BracketPage() {
   }
 
   // Enrich R32 slots with live projection data
+  function resolveProjection(seed: SeedRef): string | null {
+    if (seed.kind === 'group') return projections[seed.group]?.[seed.place - 1] ?? null
+    return null  // best3rd: can't project until group stage ends
+  }
+
   const enriched = (data as BracketMatch[]).map(match => {
     if (match.round !== 'r32') return match
     if (match.home_team && match.away_team) return match
-    const seeding = R32_SEEDING[match.slot]
+    const seeding = R32_SEEDING[match.id]
     if (!seeding) return match
     return {
       ...match,
-      projected_home: !match.home_team
-        ? (projections[seeding.home.group]?.[seeding.home.place - 1] ?? null)
-        : null,
-      projected_away: !match.away_team
-        ? (projections[seeding.away.group]?.[seeding.away.place - 1] ?? null)
-        : null,
+      projected_home: !match.home_team ? resolveProjection(seeding.home) : null,
+      projected_away: !match.away_team ? resolveProjection(seeding.away) : null,
     }
   })
 
