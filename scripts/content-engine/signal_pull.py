@@ -73,14 +73,31 @@ def _parse_match(m: dict) -> dict:
     }
 
 
-def get_matches_for_date(d: date) -> list[dict]:
-    date_str = d.strftime("%Y-%m-%d")
+def get_matches_for_et_date(et_date: date) -> list[dict]:
+    """Fetch matches that fall on et_date in ET (America/New_York).
+    Late-night ET matches (e.g. 9 PM ET = 1 AM UTC next day) have a UTC date
+    one day ahead, so we query both UTC dates and filter by ET date."""
+    from zoneinfo import ZoneInfo
+    et_tz = ZoneInfo("America/New_York")
+
+    date_from = et_date.strftime("%Y-%m-%d")
+    date_to   = (et_date + timedelta(days=1)).strftime("%Y-%m-%d")
     try:
-        data = _fd_get(f"/competitions/WC/matches?dateFrom={date_str}&dateTo={date_str}")
-        return [_parse_match(m) for m in data.get("matches", [])]
+        data = _fd_get(f"/competitions/WC/matches?dateFrom={date_from}&dateTo={date_to}")
+        matches = []
+        for m in data.get("matches", []):
+            utc_dt = datetime.fromisoformat(m["utcDate"].replace("Z", "+00:00"))
+            if utc_dt.astimezone(et_tz).date() == et_date:
+                matches.append(_parse_match(m))
+        return matches
     except Exception as e:
-        print(f"  Match fetch error for {date_str}: {e}")
+        print(f"  Match fetch error for {et_date}: {e}")
         return []
+
+
+# Keep old name as thin wrapper for backward compatibility
+def get_matches_for_date(d: date) -> list[dict]:
+    return get_matches_for_et_date(d)
 
 
 def get_standings_snapshot() -> list[dict]:
@@ -110,15 +127,17 @@ def get_standings_snapshot() -> list[dict]:
 
 
 def build_signal_brief() -> dict:
-    now = datetime.now(timezone.utc)
-    today = now.date()
+    from zoneinfo import ZoneInfo
+    et_tz = ZoneInfo("America/New_York")
+    now_et = datetime.now(et_tz)
+    today = now_et.date()          # ET date — consistent with what the app displays
     yesterday = today - timedelta(days=1)
 
     print("  Fetching today's matches...")
-    today_matches = get_matches_for_date(today)
+    today_matches = get_matches_for_et_date(today)
 
     print("  Fetching yesterday's results...")
-    yesterday_matches = get_matches_for_date(yesterday)
+    yesterday_matches = get_matches_for_et_date(yesterday)
     yesterday_results = [m for m in yesterday_matches if m["status"] == "FINISHED"]
 
     print("  Fetching standings snapshot...")
