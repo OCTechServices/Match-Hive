@@ -55,6 +55,7 @@ const FD_NAME_MAP: Record<string, string> = {
   'Bosnia & Herzegovina': 'Bosnia and Herzegovina',
   'Cape Verde Islands': 'Cape Verde',
   'Congo DR': 'DR Congo',
+  'Czech Republic': 'Czechia',
 }
 
 async function fetchScores(): Promise<Record<string, ScoreData>> {
@@ -80,12 +81,21 @@ async function fetchScores(): Promise<Record<string, ScoreData>> {
         awayScore: m.score?.fullTime?.away ?? null,
         status: m.status,
       }
-      // Primary key: normalized UTC datetime (guards against seconds/format differences)
+      // UTC datetime key: fallback only — does not encode team orientation
       lookup[(m.utcDate as string).substring(0, 16)] = scoreData
-      // Fallback key: normalized team names (guards against kickoff time discrepancies)
+      // Team-name keys: primary lookup — store both orientations so home/away
+      // differences between the API and our data don't flip displayed scores.
       const home = FD_NAME_MAP[m.homeTeam?.name] ?? m.homeTeam?.name ?? ''
       const away = FD_NAME_MAP[m.awayTeam?.name] ?? m.awayTeam?.name ?? ''
-      if (home && away) lookup[`${home}|${away}`] = scoreData
+      if (home && away) {
+        lookup[`${home}|${away}`] = scoreData
+        // Reversed key with swapped scores for when API home/away differs from ours
+        lookup[`${away}|${home}`] = {
+          homeScore: scoreData.awayScore,
+          awayScore: scoreData.homeScore,
+          status: scoreData.status,
+        }
+      }
     }
 
     return lookup
@@ -227,8 +237,8 @@ export default async function SchedulePage() {
                     key={m.id}
                     match={m}
                     score={
-                      scores[m.dateUtc.substring(0, 16)] ??
-                      scores[`${m.homeTeam}|${m.awayTeam}`]
+                      scores[`${m.homeTeam}|${m.awayTeam}`] ??
+                      scores[m.dateUtc.substring(0, 16)]
                     }
                   />
                 ))}
