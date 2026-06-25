@@ -104,7 +104,7 @@ function matchPathState(m: BracketMatch): PathState {
 
 function pathColor(s: PathState): string {
   if (s === 'confirmed') return '#4ade80'
-  if (s === 'projected') return '#fbbf24'
+  if (s === 'projected') return '#fb923c'
   return 'rgba(255,255,255,0.07)'
 }
 
@@ -129,7 +129,7 @@ function TeamRow({ name, isConfirmed, isProjected, isWinner, isLoser, score }: {
         isConfirmed
           ? isWinner ? 'text-white' : 'text-white/65'
           : isProjected
-            ? 'text-amber-300/70'
+            ? 'text-orange-300/80'
             : 'text-white/[0.18]'
       }`}>
         {name ?? 'TBD'}
@@ -161,7 +161,7 @@ function MatchNode({ match }: { match: BracketMatch }) {
     : bothConf
       ? '1px solid rgba(255,255,255,0.13)'
       : hasProj
-        ? '1px dashed rgba(251,191,36,0.35)'
+        ? '1px dashed rgba(251,146,60,0.4)'
         : '1px solid rgba(255,255,255,0.05)'
 
   const bg = isLive
@@ -169,7 +169,7 @@ function MatchNode({ match }: { match: BracketMatch }) {
     : bothConf
       ? 'rgba(255,255,255,0.05)'
       : hasProj
-        ? 'rgba(251,191,36,0.04)'
+        ? 'rgba(251,146,60,0.05)'
         : 'rgba(255,255,255,0.015)'
 
   return (
@@ -271,7 +271,7 @@ function RoundColumn({ label, matches, slotH, isFinal = false }: {
   return (
     <div style={{ width: CARD_W, flexShrink: 0 }}>
       <p
-        className={`text-[9px] font-bold uppercase tracking-widest text-center ${isFinal ? 'text-amber-400' : 'text-green-400/60'}`}
+        className={`text-[9px] font-bold uppercase tracking-widest text-center ${isFinal ? 'text-orange-400' : 'text-green-400/60'}`}
         style={{ height: LABEL_H, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
       >
         {label}
@@ -361,8 +361,8 @@ export default async function BracketPage() {
           <span className="text-white/40">Clear path</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-6 h-px bg-amber-400 animate-pulse" />
-          <span className="text-amber-400/60">Maybe path</span>
+          <div className="w-6 h-px bg-orange-400 animate-pulse" />
+          <span className="text-orange-400/60">Maybe path</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-6 h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
