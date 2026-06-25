@@ -204,12 +204,12 @@ function MatchNode({ match }: { match: BracketMatch }) {
         padding: '0 10px', gap: 2,
       }}>
         {match.date_utc ? (
-          <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.35)', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.65)', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {formatMatchDate(match.date_utc)}
           </span>
         ) : null}
         {(match.venue || match.city) ? (
-          <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.22)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.50)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {[match.venue, match.city].filter(Boolean).join(' · ')}
           </span>
         ) : null}
