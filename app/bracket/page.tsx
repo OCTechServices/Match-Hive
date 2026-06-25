@@ -76,12 +76,23 @@ async function fetchProjections(): Promise<Record<string, string[]>> {
 }
 
 // ── Layout constants (px) ───────────────────────────────────────────────
-const CARD_H   = 64
-const CARD_W   = 172
-const SLOT_GAP = 10
-const CONN_W   = 44
-const SLOT_H   = CARD_H + SLOT_GAP  // 74 — base slot unit for R32
-const LABEL_H  = 28
+const CARD_H    = 100              // total card height
+const TEAM_ROW  = 32               // height per team row
+const META_H    = CARD_H - TEAM_ROW * 2  // 36px — date / venue section
+const CARD_W    = 190
+const SLOT_GAP  = 10
+const CONN_W    = 44
+const SLOT_H    = CARD_H + SLOT_GAP   // 110 — base slot unit for R32
+const LABEL_H   = 28
+
+function formatMatchDate(utc: string): string {
+  return new Date(utc).toLocaleDateString('en-US', {
+    month: 'short', day: 'numeric',
+    hour: 'numeric', minute: '2-digit',
+    timeZone: 'America/New_York',
+    timeZoneName: 'short',
+  })
+}
 
 type PathState = 'confirmed' | 'projected' | 'tbd'
 
@@ -108,8 +119,8 @@ function TeamRow({ name, isConfirmed, isProjected, isWinner, isLoser, score }: {
 }) {
   return (
     <div
-      className={`flex items-center gap-1.5 px-2 transition-opacity ${isLoser ? 'opacity-25' : ''}`}
-      style={{ height: CARD_H / 2 }}
+      className={`flex items-center gap-1.5 px-2.5 transition-opacity ${isLoser ? 'opacity-25' : ''}`}
+      style={{ height: TEAM_ROW }}
     >
       <span className={`text-base leading-none shrink-0 ${!name ? 'opacity-[0.12]' : ''}`}>
         {name ? (flagMap[name] ?? '🏳') : '🏳'}
@@ -140,10 +151,10 @@ function MatchNode({ match }: { match: BracketMatch }) {
   const hP = !hC && !!match.projected_home, aP = !aC && !!match.projected_away
   const hD = match.home_team ?? match.projected_home ?? null
   const aD = match.away_team ?? match.projected_away ?? null
-  const isLive    = match.status === 'live'
-  const hasScore  = match.home_score !== null && match.away_score !== null
-  const bothConf  = hC && aC
-  const hasProj   = hP || aP
+  const isLive   = match.status === 'live'
+  const hasScore = match.home_score !== null && match.away_score !== null
+  const bothConf = hC && aC
+  const hasProj  = hP || aP
 
   const border = isLive
     ? '1px solid #4ade80'
@@ -168,24 +179,42 @@ function MatchNode({ match }: { match: BracketMatch }) {
       borderRadius: 12, overflow: 'hidden', position: 'relative', flexShrink: 0,
       boxShadow: isLive ? '0 0 14px rgba(74,222,128,0.22)' : 'none',
     }}>
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-        <div style={{ flex: 1, borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-          <TeamRow
-            name={hD} isConfirmed={hC} isProjected={hP}
-            isWinner={!!match.winner && match.winner === match.home_team}
-            isLoser={!!match.winner && !!match.home_team && match.winner !== match.home_team}
-            score={hasScore ? match.home_score : null}
-          />
-        </div>
-        <div style={{ flex: 1 }}>
-          <TeamRow
-            name={aD} isConfirmed={aC} isProjected={aP}
-            isWinner={!!match.winner && match.winner === match.away_team}
-            isLoser={!!match.winner && !!match.away_team && match.winner !== match.away_team}
-            score={hasScore ? match.away_score : null}
-          />
-        </div>
+      {/* Teams */}
+      <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+        <TeamRow
+          name={hD} isConfirmed={hC} isProjected={hP}
+          isWinner={!!match.winner && match.winner === match.home_team}
+          isLoser={!!match.winner && !!match.home_team && match.winner !== match.home_team}
+          score={hasScore ? match.home_score : null}
+        />
       </div>
+      <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+        <TeamRow
+          name={aD} isConfirmed={aC} isProjected={aP}
+          isWinner={!!match.winner && match.winner === match.away_team}
+          isLoser={!!match.winner && !!match.away_team && match.winner !== match.away_team}
+          score={hasScore ? match.away_score : null}
+        />
+      </div>
+
+      {/* Meta — date / time / venue */}
+      <div style={{
+        height: META_H,
+        display: 'flex', flexDirection: 'column', justifyContent: 'center',
+        padding: '0 10px', gap: 2,
+      }}>
+        {match.date_utc ? (
+          <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.35)', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {formatMatchDate(match.date_utc)}
+          </span>
+        ) : null}
+        {(match.venue || match.city) ? (
+          <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.22)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {[match.venue, match.city].filter(Boolean).join(' · ')}
+          </span>
+        ) : null}
+      </div>
+
       {isLive && (
         <span className="animate-pulse" style={{
           position: 'absolute', top: 3, right: 5,
