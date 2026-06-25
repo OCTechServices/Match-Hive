@@ -1,30 +1,52 @@
-'use client'
-
-import { useEffect, useState } from 'react'
+import type { Metadata } from 'next'
 import { TEAMS } from '@/data/wc2026'
+import { supabase } from '@/lib/supabase'
+import { R32_SEEDING } from '@/lib/bracket-seeding'
+import type { BracketMatch } from '@/data/bracket'
+
+export const metadata: Metadata = {
+  title: 'Match-Hive — FIFA World Cup 2026 Knockout Bracket',
+  description: 'Live FIFA World Cup 2026 knockout bracket. Track the clear path and projected path to the Final.',
+}
+
+export const revalidate = 300
 
 const flagMap = Object.fromEntries(TEAMS.map(t => [t.name, t.flag]))
 
-interface BracketMatch {
-  id: string
-  round: string
-  slot: number
-  home_team: string | null
-  away_team: string | null
-  home_score: number | null
-  away_score: number | null
-  winner: string | null
-  date_utc: string | null
-  venue: string | null
-  city: string | null
-  status: string
-  projected_home?: string | null
-  projected_away?: string | null
+// ── Standings enrichment ─────────────────────────────────────────────────
+const FD_NAME_MAP: Record<string, string> = {
+  'United States': 'USA',
+  'Korea Republic': 'South Korea',
+  "Côte d'Ivoire": 'Ivory Coast',
+  'Türkiye': 'Turkiye',
+  'Turkey': 'Turkiye',
+  'Bosnia-Herzegovina': 'Bosnia and Herzegovina',
+  'Bosnia & Herzegovina': 'Bosnia and Herzegovina',
+  'Cape Verde Islands': 'Cape Verde',
+  'Congo DR': 'DR Congo',
+  'Czech Republic': 'Czechia',
 }
 
-interface BracketData {
-  bracket: Record<string, BracketMatch[]>
-  updatedAt: string
+async function fetchProjections(): Promise<Record<string, string[]>> {
+  const key = process.env.FOOTBALL_DATA_API_KEY
+  if (!key) return {}
+  try {
+    const res = await fetch(
+      'https://api.football-data.org/v4/competitions/WC/standings',
+      { headers: { 'X-Auth-Token': key }, next: { revalidate: 300 } }
+    )
+    if (!res.ok) return {}
+    const json = await res.json()
+    const out: Record<string, string[]> = {}
+    for (const g of (json.standings ?? []) as Array<{ type: string; group: string; table: Array<{ team: { name: string } }> }>) {
+      if (g.type !== 'TOTAL') continue
+      const letter = g.group.replace('GROUP_', '')
+      out[letter] = g.table.map(row => FD_NAME_MAP[row.team.name] ?? row.team.name)
+    }
+    return out
+  } catch {
+    return {}
+  }
 }
 
 // ── Layout constants (px) ───────────────────────────────────────────────
@@ -32,8 +54,8 @@ const CARD_H   = 64
 const CARD_W   = 172
 const SLOT_GAP = 10
 const CONN_W   = 44
-const SLOT_H   = CARD_H + SLOT_GAP   // 74 — base slot unit for R32
-const LABEL_H  = 28                   // height reserved for round label
+const SLOT_H   = CARD_H + SLOT_GAP  // 74 — base slot unit for R32
+const LABEL_H  = 28
 
 type PathState = 'confirmed' | 'projected' | 'tbd'
 
@@ -70,7 +92,7 @@ function TeamRow({ name, isConfirmed, isProjected, isWinner, isLoser, score }: {
         isConfirmed
           ? isWinner ? 'text-white' : 'text-white/65'
           : isProjected
-            ? 'text-amber-300/65'
+            ? 'text-amber-300/70'
             : 'text-white/[0.18]'
       }`}>
         {name ?? 'TBD'}
@@ -102,7 +124,7 @@ function MatchNode({ match }: { match: BracketMatch }) {
     : bothConf
       ? '1px solid rgba(255,255,255,0.13)'
       : hasProj
-        ? '1px dashed rgba(251,191,36,0.28)'
+        ? '1px dashed rgba(251,191,36,0.35)'
         : '1px solid rgba(255,255,255,0.05)'
 
   const bg = isLive
@@ -110,7 +132,7 @@ function MatchNode({ match }: { match: BracketMatch }) {
     : bothConf
       ? 'rgba(255,255,255,0.05)'
       : hasProj
-        ? 'rgba(251,191,36,0.03)'
+        ? 'rgba(251,191,36,0.04)'
         : 'rgba(255,255,255,0.015)'
 
   return (
@@ -121,7 +143,7 @@ function MatchNode({ match }: { match: BracketMatch }) {
       boxShadow: isLive ? '0 0 14px rgba(74,222,128,0.22)' : 'none',
     }}>
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-        <div style={{ flex: 1, borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+        <div style={{ flex: 1, borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
           <TeamRow
             name={hD} isConfirmed={hC} isProjected={hP}
             isWinner={!!match.winner && match.winner === match.home_team}
@@ -149,8 +171,6 @@ function MatchNode({ match }: { match: BracketMatch }) {
 }
 
 // ── ConnectorColumn ──────────────────────────────────────────────────────
-// Draws the branching lines between two adjacent rounds.
-// Each unit covers 2 input slots → 1 output slot.
 function ConnectorColumn({ count, unitH, inputSlotH, states }: {
   count: number
   unitH: number
@@ -159,15 +179,12 @@ function ConnectorColumn({ count, unitH, inputSlotH, states }: {
 }) {
   return (
     <div style={{ width: CONN_W, flexShrink: 0 }}>
-      {/* Spacer matching the round label height */}
       <div style={{ height: LABEL_H }} />
-
       {Array.from({ length: count }, (_, i) => {
         const state = states[i] ?? 'tbd'
         const color = pathColor(state)
         const glow  = state === 'confirmed' ? `0 0 6px ${color}` : 'none'
         const arm   = CONN_W / 2
-        // Y positions of the two input card centers within this unit
         const topY  = inputSlotH / 2 - 0.5
         const botY  = unitH - inputSlotH / 2 - 0.5
         const midY  = unitH / 2 - 0.5
@@ -178,26 +195,10 @@ function ConnectorColumn({ count, unitH, inputSlotH, states }: {
             className={state === 'projected' ? 'animate-pulse' : ''}
             style={{ position: 'relative', height: unitH, width: CONN_W }}
           >
-            {/* Top arm — horizontal from left edge to center */}
-            <div style={{
-              position: 'absolute', top: topY, left: 0,
-              width: arm, height: 1, background: color, boxShadow: glow,
-            }} />
-            {/* Bottom arm */}
-            <div style={{
-              position: 'absolute', top: botY, left: 0,
-              width: arm, height: 1, background: color, boxShadow: glow,
-            }} />
-            {/* Vertical bar connecting the two arms */}
-            <div style={{
-              position: 'absolute', top: topY, left: arm - 0.5,
-              width: 1, height: botY - topY + 1, background: color, boxShadow: glow,
-            }} />
-            {/* Output arm — horizontal from center to right edge */}
-            <div style={{
-              position: 'absolute', top: midY, left: arm,
-              width: arm, height: 1, background: color, boxShadow: glow,
-            }} />
+            <div style={{ position: 'absolute', top: topY, left: 0, width: arm, height: 1, background: color, boxShadow: glow }} />
+            <div style={{ position: 'absolute', top: botY, left: 0, width: arm, height: 1, background: color, boxShadow: glow }} />
+            <div style={{ position: 'absolute', top: topY, left: arm - 0.5, width: 1, height: botY - topY + 1, background: color, boxShadow: glow }} />
+            <div style={{ position: 'absolute', top: midY, left: arm, width: arm, height: 1, background: color, boxShadow: glow }} />
           </div>
         )
       })}
@@ -214,9 +215,10 @@ function RoundColumn({ label, matches, slotH, isFinal = false }: {
 }) {
   return (
     <div style={{ width: CARD_W, flexShrink: 0 }}>
-      <p className={`text-[9px] font-bold uppercase tracking-widest text-center ${
-        isFinal ? 'text-amber-400' : 'text-green-400/60'
-      }`} style={{ height: LABEL_H, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <p
+        className={`text-[9px] font-bold uppercase tracking-widest text-center ${isFinal ? 'text-amber-400' : 'text-green-400/60'}`}
+        style={{ height: LABEL_H, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+      >
         {label}
       </p>
       <div>
@@ -231,45 +233,53 @@ function RoundColumn({ label, matches, slotH, isFinal = false }: {
 }
 
 // ── Page ─────────────────────────────────────────────────────────────────
-export default function BracketPage() {
-  const [data, setData]   = useState<BracketData | null>(null)
-  const [error, setError] = useState(false)
+export default async function BracketPage() {
+  const [{ data, error }, projections] = await Promise.all([
+    supabase.from('bracket_matches').select('*').order('slot', { ascending: true }),
+    fetchProjections(),
+  ])
 
-  useEffect(() => {
-    fetch('/api/bracket')
-      .then(r => { if (!r.ok) throw new Error(); return r.json() })
-      .then(setData)
-      .catch(() => setError(true))
-  }, [])
+  if (error || !data) {
+    return (
+      <div className="flex items-center justify-center min-h-64 text-white/40 text-sm">
+        Failed to load bracket data. Please refresh.
+      </div>
+    )
+  }
 
-  if (error) return (
-    <div className="flex items-center justify-center min-h-64 text-white/40 text-sm">
-      Failed to load bracket data. Please refresh.
-    </div>
-  )
-  if (!data) return (
-    <div className="flex items-center justify-center min-h-64 text-white/40 text-sm animate-pulse">
-      Loading bracket...
-    </div>
-  )
+  // Enrich R32 slots with projections from live standings
+  const enriched = (data as BracketMatch[]).map(match => {
+    if (match.round !== 'r32') return match
+    if (match.home_team && match.away_team) return match
+    const seeding = R32_SEEDING[match.slot]
+    if (!seeding) return match
+    return {
+      ...match,
+      projected_home: !match.home_team
+        ? (projections[seeding.home.group]?.[seeding.home.place - 1] ?? null)
+        : null,
+      projected_away: !match.away_team
+        ? (projections[seeding.away.group]?.[seeding.away.place - 1] ?? null)
+        : null,
+    }
+  })
 
-  const rounds = data.bracket
-  const bySlot = (arr: BracketMatch[]) => [...arr].sort((x, y) => x.slot - y.slot)
-  const r32    = bySlot(rounds['r32']   ?? [])
-  const r16    = bySlot(rounds['r16']   ?? [])
-  const qf     = bySlot(rounds['qf']    ?? [])
-  const sf     = bySlot(rounds['sf']    ?? [])
-  const final  = bySlot(rounds['final'] ?? [])
-  const third  = bySlot(rounds['3rd']   ?? [])
+  const bySlot = (round: string) =>
+    enriched.filter(m => m.round === round).sort((a, b) => a.slot - b.slot)
 
-  // Slot heights — each round slot is 2× the previous
-  const sR32   = SLOT_H          //  74px
-  const sR16   = SLOT_H * 2     // 148px
-  const sQF    = SLOT_H * 4     // 296px
-  const sSF    = SLOT_H * 8     // 592px
-  const sFinal = SLOT_H * 16    // 1184px
+  const r32   = bySlot('r32')
+  const r16   = bySlot('r16')
+  const qf    = bySlot('qf')
+  const sf    = bySlot('sf')
+  const final = bySlot('final')
+  const third = bySlot('3rd')
 
-  // Determine connector path state from each pair of feeder matches
+  const sR32   = SLOT_H
+  const sR16   = SLOT_H * 2
+  const sQF    = SLOT_H * 4
+  const sSF    = SLOT_H * 8
+  const sFinal = SLOT_H * 16
+
   function pairStates(feeders: BracketMatch[], n: number): PathState[] {
     return Array.from({ length: n }, (_, i) => {
       const sA = feeders[i * 2]     ? matchPathState(feeders[i * 2])     : 'tbd'
@@ -280,105 +290,76 @@ export default function BracketPage() {
     })
   }
 
-  const hasProjections = [...r32, ...r16, ...qf, ...sf, ...final].some(
-    m => m.projected_home || m.projected_away
-  )
+  const hasProjections = enriched.some(m => m.projected_home || m.projected_away)
 
   return (
     <div className="px-4 py-10">
 
-      {/* Header */}
       <div className="mb-8 max-w-4xl">
         <h1 className="text-4xl font-bold mb-2 font-display uppercase tracking-wide">Knockout Bracket</h1>
         <p className="text-white/40 text-sm">Starts June 29 · 32 teams, one trophy</p>
       </div>
 
-      {/* Legend */}
-      {hasProjections && (
-        <div className="flex items-center gap-6 mb-8 text-[11px]">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-px" style={{ background: '#4ade80', boxShadow: '0 0 6px #4ade80' }} />
-            <span className="text-white/40">Clear path</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-px bg-amber-400 animate-pulse" />
-            <span className="text-amber-400/50">Maybe path</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
-            <span className="text-white/20">TBD</span>
-          </div>
+      <div className="flex items-center gap-6 mb-8 text-[11px]">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-px" style={{ background: '#4ade80', boxShadow: '0 0 6px #4ade80' }} />
+          <span className="text-white/40">Clear path</span>
         </div>
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-px bg-amber-400 animate-pulse" />
+          <span className="text-amber-400/60">Maybe path</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
+          <span className="text-white/20">TBD</span>
+        </div>
+      </div>
+
+      {!hasProjections && (
+        <p className="text-white/30 text-sm mb-8">
+          Projections load from live standings — check back once group matches are underway.
+        </p>
       )}
 
-      {/* Bracket tree — horizontal scroll */}
+      {/* Bracket tree */}
       <div className="overflow-x-auto pb-6">
         <div className="inline-flex items-start">
 
-          {r32.length > 0 && (
-            <RoundColumn label="Round of 32" matches={r32} slotH={sR32} />
-          )}
+          {r32.length > 0 && <RoundColumn label="Round of 32" matches={r32} slotH={sR32} />}
 
           {r32.length > 0 && r16.length > 0 && (
-            <ConnectorColumn
-              count={8} unitH={sR16} inputSlotH={sR32}
-              states={pairStates(r32, 8)}
-            />
+            <ConnectorColumn count={8} unitH={sR16} inputSlotH={sR32} states={pairStates(r32, 8)} />
           )}
 
-          {r16.length > 0 && (
-            <RoundColumn label="Round of 16" matches={r16} slotH={sR16} />
-          )}
+          {r16.length > 0 && <RoundColumn label="Round of 16" matches={r16} slotH={sR16} />}
 
           {r16.length > 0 && qf.length > 0 && (
-            <ConnectorColumn
-              count={4} unitH={sQF} inputSlotH={sR16}
-              states={pairStates(r16, 4)}
-            />
+            <ConnectorColumn count={4} unitH={sQF} inputSlotH={sR16} states={pairStates(r16, 4)} />
           )}
 
-          {qf.length > 0 && (
-            <RoundColumn label="Quarterfinals" matches={qf} slotH={sQF} />
-          )}
+          {qf.length > 0 && <RoundColumn label="Quarterfinals" matches={qf} slotH={sQF} />}
 
           {qf.length > 0 && sf.length > 0 && (
-            <ConnectorColumn
-              count={2} unitH={sSF} inputSlotH={sQF}
-              states={pairStates(qf, 2)}
-            />
+            <ConnectorColumn count={2} unitH={sSF} inputSlotH={sQF} states={pairStates(qf, 2)} />
           )}
 
-          {sf.length > 0 && (
-            <RoundColumn label="Semifinals" matches={sf} slotH={sSF} />
-          )}
+          {sf.length > 0 && <RoundColumn label="Semifinals" matches={sf} slotH={sSF} />}
 
           {sf.length > 0 && final.length > 0 && (
-            <ConnectorColumn
-              count={1} unitH={sFinal} inputSlotH={sSF}
-              states={pairStates(sf, 1)}
-            />
+            <ConnectorColumn count={1} unitH={sFinal} inputSlotH={sSF} states={pairStates(sf, 1)} />
           )}
 
-          {final.length > 0 && (
-            <RoundColumn label="Final" matches={final} slotH={sFinal} isFinal />
-          )}
+          {final.length > 0 && <RoundColumn label="Final" matches={final} slotH={sFinal} isFinal />}
 
         </div>
       </div>
 
-      {/* Third Place — separate section */}
       {third.length > 0 && (
         <div className="mt-10" style={{ maxWidth: CARD_W }}>
-          <p className="text-[9px] font-bold uppercase tracking-widest text-white/30 mb-3">
-            Third Place
-          </p>
+          <p className="text-[9px] font-bold uppercase tracking-widest text-white/30 mb-3">Third Place</p>
           <MatchNode match={third[0]} />
         </div>
       )}
-
-      <p className="text-[11px] text-white/[0.12] mt-10">
-        Updated {new Date(data.updatedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
-      </p>
 
     </div>
   )
