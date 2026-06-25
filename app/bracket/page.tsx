@@ -1,8 +1,10 @@
 import type { Metadata } from 'next'
-import { TEAMS } from '@/data/wc2026'
+import { TEAMS, MATCHES } from '@/data/wc2026'
 import { supabase } from '@/lib/supabase'
 import { R32_SEEDING } from '@/lib/bracket-seeding'
+import { computeGroupStandings } from '@/lib/standings'
 import type { BracketMatch } from '@/data/bracket'
+import type { Match } from '@/types'
 
 export const metadata: Metadata = {
   title: 'Match-Hive — FIFA World Cup 2026 Knockout Bracket',
@@ -27,21 +29,45 @@ const FD_NAME_MAP: Record<string, string> = {
   'Czech Republic': 'Czechia',
 }
 
+// Compute group projections from the matches endpoint — same URL the schedule
+// page uses, so both share the Next.js fetch cache (no extra API calls).
 async function fetchProjections(): Promise<Record<string, string[]>> {
   const key = process.env.FOOTBALL_DATA_API_KEY
   if (!key) return {}
   try {
     const res = await fetch(
-      'https://api.football-data.org/v4/competitions/WC/standings',
+      'https://api.football-data.org/v4/competitions/WC/matches',
       { headers: { 'X-Auth-Token': key }, next: { revalidate: 300 } }
     )
     if (!res.ok) return {}
     const json = await res.json()
+
+    // Build score map by normalised team-pair key (both orientations)
+    const scoreMap: Record<string, { home: number; away: number }> = {}
+    for (const m of json.matches ?? []) {
+      if (m.status !== 'FINISHED') continue
+      const h = m.score?.fullTime?.home
+      const a = m.score?.fullTime?.away
+      if (h == null || a == null) continue
+      const hn = FD_NAME_MAP[m.homeTeam?.name] ?? m.homeTeam?.name ?? ''
+      const an = FD_NAME_MAP[m.awayTeam?.name] ?? m.awayTeam?.name ?? ''
+      if (hn && an) {
+        scoreMap[`${hn}|${an}`] = { home: h, away: a }
+        scoreMap[`${an}|${hn}`] = { home: a, away: h }
+      }
+    }
+
+    // Merge API scores into our match data and compute standings per group
+    const enrichedMatches: Match[] = MATCHES.map(m => {
+      const score = scoreMap[`${m.homeTeam}|${m.awayTeam}`]
+      return score ? { ...m, homeScore: score.home, awayScore: score.away } : m
+    })
+
     const out: Record<string, string[]> = {}
-    for (const g of (json.standings ?? []) as Array<{ type: string; group: string; table: Array<{ team: { name: string } }> }>) {
-      if (g.type !== 'TOTAL') continue
-      const letter = g.group.replace('GROUP_', '')
-      out[letter] = g.table.map(row => FD_NAME_MAP[row.team.name] ?? row.team.name)
+    const groups = ['A','B','C','D','E','F','G','H','I','J','K','L']
+    for (const g of groups) {
+      const rows = computeGroupStandings(g, enrichedMatches, TEAMS)
+      if (rows.length > 0) out[g] = rows.map(r => r.team.name)
     }
     return out
   } catch {
