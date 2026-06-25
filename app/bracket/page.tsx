@@ -27,227 +27,359 @@ interface BracketData {
   updatedAt: string
 }
 
-const ROUND_CONFIG = [
-  { key: 'r32',   label: 'Round of 32',   cols: 'grid-cols-1 sm:grid-cols-2' },
-  { key: 'r16',   label: 'Round of 16',   cols: 'grid-cols-1 sm:grid-cols-2' },
-  { key: 'qf',    label: 'Quarterfinals', cols: 'grid-cols-1 sm:grid-cols-2' },
-  { key: 'sf',    label: 'Semifinals',    cols: 'grid-cols-1 sm:grid-cols-2' },
-  { key: 'final', label: 'Final',         cols: 'grid-cols-1 max-w-lg mx-auto' },
-  { key: '3rd',   label: 'Third Place',   cols: 'grid-cols-1 max-w-lg mx-auto' },
-]
+// ── Layout constants (px) ───────────────────────────────────────────────
+const CARD_H   = 64
+const CARD_W   = 172
+const SLOT_GAP = 10
+const CONN_W   = 44
+const SLOT_H   = CARD_H + SLOT_GAP   // 74 — base slot unit for R32
+const LABEL_H  = 28                   // height reserved for round label
 
-function formatDate(utc: string): string {
-  return new Date(utc).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric',
-    hour: 'numeric', minute: '2-digit',
-    timeZone: 'America/New_York',
-    timeZoneName: 'short',
-  })
+type PathState = 'confirmed' | 'projected' | 'tbd'
+
+function matchPathState(m: BracketMatch): PathState {
+  if (m.winner || (m.home_team && m.away_team)) return 'confirmed'
+  if (m.projected_home || m.projected_away) return 'projected'
+  return 'tbd'
 }
 
-function MatchCard({ match }: { match: BracketMatch }) {
-  const homeConfirmed = !!match.home_team
-  const awayConfirmed = !!match.away_team
-  const homeDisplay  = match.home_team ?? match.projected_home ?? null
-  const awayDisplay  = match.away_team ?? match.projected_away ?? null
-  const homeIsProjected = !homeConfirmed && !!match.projected_home
-  const awayIsProjected = !awayConfirmed && !!match.projected_away
-  const isFullyConfirmed = homeConfirmed && awayConfirmed
-  const hasAnyProjection = homeIsProjected || awayIsProjected
+function pathColor(s: PathState): string {
+  if (s === 'confirmed') return '#4ade80'
+  if (s === 'projected') return '#fbbf24'
+  return 'rgba(255,255,255,0.07)'
+}
 
-  const hasScore = match.home_score !== null && match.away_score !== null
-  const isLive    = match.status === 'live'
-  const homeIsLoser = hasScore && !!match.winner && match.winner !== match.home_team
-  const awayIsLoser = hasScore && !!match.winner && match.winner !== match.away_team
-
-  const cardStyles = isLive
-    ? 'bg-green-500/[0.05] border border-green-400/40 shadow-[0_0_24px_rgba(74,222,128,0.08)]'
-    : isFullyConfirmed
-      ? 'bg-white/[0.06] border border-white/15 hover:bg-white/[0.08] hover:border-white/20'
-      : hasAnyProjection
-        ? 'bg-amber-500/[0.04] border border-dashed border-amber-400/25 hover:bg-amber-500/[0.06]'
-        : 'bg-white/[0.02] border border-white/6 opacity-50'
-
+// ── TeamRow ─────────────────────────────────────────────────────────────
+function TeamRow({ name, isConfirmed, isProjected, isWinner, isLoser, score }: {
+  name: string | null
+  isConfirmed: boolean
+  isProjected: boolean
+  isWinner: boolean
+  isLoser: boolean
+  score: number | null
+}) {
   return (
-    <div className={`rounded-2xl px-5 py-4 transition-colors ${cardStyles}`}>
-
-      {/* Teams row */}
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 mb-3">
-
-        {/* Home */}
-        <div className={`flex flex-col items-center gap-1.5 text-center transition-opacity ${homeIsLoser ? 'opacity-35' : ''}`}>
-          <span className={`text-4xl sm:text-5xl leading-none ${!homeDisplay ? 'opacity-[0.12]' : ''}`}>
-            {homeDisplay ? (flagMap[homeDisplay] ?? '🏳') : '🏳'}
-          </span>
-          <span className={`text-xs sm:text-sm font-semibold leading-tight ${
-            homeConfirmed   ? 'text-white' :
-            homeIsProjected ? 'text-amber-300/70' :
-                              'text-white/20'
-          }`}>
-            {homeDisplay ?? 'TBD'}
-          </span>
-          {homeIsProjected && (
-            <span className="text-[9px] font-medium text-amber-400/50 uppercase tracking-wider leading-none">
-              maybe
-            </span>
-          )}
-        </div>
-
-        {/* Center */}
-        <div className="flex flex-col items-center gap-1.5 min-w-[52px]">
-          {isLive ? (
-            <>
-              <span className="text-xl sm:text-2xl font-bold tracking-tight text-green-400">
-                {match.home_score} – {match.away_score}
-              </span>
-              <span className="text-[9px] font-bold text-green-400 uppercase tracking-wide animate-pulse">LIVE</span>
-            </>
-          ) : hasScore ? (
-            <>
-              <span className="text-xl sm:text-2xl font-bold tracking-tight">
-                {match.home_score} – {match.away_score}
-              </span>
-              <span className="text-[9px] font-semibold text-white/25 uppercase tracking-wide">FT</span>
-            </>
-          ) : (
-            <span className={`text-[11px] font-bold uppercase tracking-widest ${
-              hasAnyProjection ? 'text-amber-500/30' : 'text-white/[0.12]'
-            }`}>vs</span>
-          )}
-        </div>
-
-        {/* Away */}
-        <div className={`flex flex-col items-center gap-1.5 text-center transition-opacity ${awayIsLoser ? 'opacity-35' : ''}`}>
-          <span className={`text-4xl sm:text-5xl leading-none ${!awayDisplay ? 'opacity-[0.12]' : ''}`}>
-            {awayDisplay ? (flagMap[awayDisplay] ?? '🏳') : '🏳'}
-          </span>
-          <span className={`text-xs sm:text-sm font-semibold leading-tight ${
-            awayConfirmed   ? 'text-white' :
-            awayIsProjected ? 'text-amber-300/70' :
-                              'text-white/20'
-          }`}>
-            {awayDisplay ?? 'TBD'}
-          </span>
-          {awayIsProjected && (
-            <span className="text-[9px] font-medium text-amber-400/50 uppercase tracking-wider leading-none">
-              maybe
-            </span>
-          )}
-        </div>
-
-      </div>
-
-      {/* Meta row */}
-      {match.date_utc && (
-        <div className="flex items-center justify-center gap-2 text-[10px] text-white/25 border-t border-white/[0.06] pt-2.5">
-          <span className="font-medium">{formatDate(match.date_utc)}</span>
-          {match.city && (
-            <>
-              <span>·</span>
-              <span>{match.city}</span>
-            </>
-          )}
-        </div>
+    <div
+      className={`flex items-center gap-1.5 px-2 transition-opacity ${isLoser ? 'opacity-25' : ''}`}
+      style={{ height: CARD_H / 2 }}
+    >
+      <span className={`text-base leading-none shrink-0 ${!name ? 'opacity-[0.12]' : ''}`}>
+        {name ? (flagMap[name] ?? '🏳') : '🏳'}
+      </span>
+      <span className={`flex-1 text-[11px] font-semibold truncate ${
+        isConfirmed
+          ? isWinner ? 'text-white' : 'text-white/65'
+          : isProjected
+            ? 'text-amber-300/65'
+            : 'text-white/[0.18]'
+      }`}>
+        {name ?? 'TBD'}
+      </span>
+      {score !== null && (
+        <span className={`text-[11px] font-bold tabular-nums shrink-0 ${
+          isWinner ? 'text-green-400' : 'text-white/35'
+        }`}>
+          {score}
+        </span>
       )}
     </div>
   )
 }
 
+// ── MatchNode ────────────────────────────────────────────────────────────
+function MatchNode({ match }: { match: BracketMatch }) {
+  const hC = !!match.home_team, aC = !!match.away_team
+  const hP = !hC && !!match.projected_home, aP = !aC && !!match.projected_away
+  const hD = match.home_team ?? match.projected_home ?? null
+  const aD = match.away_team ?? match.projected_away ?? null
+  const isLive    = match.status === 'live'
+  const hasScore  = match.home_score !== null && match.away_score !== null
+  const bothConf  = hC && aC
+  const hasProj   = hP || aP
+
+  const border = isLive
+    ? '1px solid #4ade80'
+    : bothConf
+      ? '1px solid rgba(255,255,255,0.13)'
+      : hasProj
+        ? '1px dashed rgba(251,191,36,0.28)'
+        : '1px solid rgba(255,255,255,0.05)'
+
+  const bg = isLive
+    ? 'rgba(74,222,128,0.05)'
+    : bothConf
+      ? 'rgba(255,255,255,0.05)'
+      : hasProj
+        ? 'rgba(251,191,36,0.03)'
+        : 'rgba(255,255,255,0.015)'
+
+  return (
+    <div style={{
+      width: CARD_W, height: CARD_H,
+      border, background: bg,
+      borderRadius: 12, overflow: 'hidden', position: 'relative', flexShrink: 0,
+      boxShadow: isLive ? '0 0 14px rgba(74,222,128,0.22)' : 'none',
+    }}>
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <div style={{ flex: 1, borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+          <TeamRow
+            name={hD} isConfirmed={hC} isProjected={hP}
+            isWinner={!!match.winner && match.winner === match.home_team}
+            isLoser={!!match.winner && !!match.home_team && match.winner !== match.home_team}
+            score={hasScore ? match.home_score : null}
+          />
+        </div>
+        <div style={{ flex: 1 }}>
+          <TeamRow
+            name={aD} isConfirmed={aC} isProjected={aP}
+            isWinner={!!match.winner && match.winner === match.away_team}
+            isLoser={!!match.winner && !!match.away_team && match.winner !== match.away_team}
+            score={hasScore ? match.away_score : null}
+          />
+        </div>
+      </div>
+      {isLive && (
+        <span className="animate-pulse" style={{
+          position: 'absolute', top: 3, right: 5,
+          fontSize: 8, fontWeight: 700, color: '#4ade80', letterSpacing: '0.06em',
+        }}>LIVE</span>
+      )}
+    </div>
+  )
+}
+
+// ── ConnectorColumn ──────────────────────────────────────────────────────
+// Draws the branching lines between two adjacent rounds.
+// Each unit covers 2 input slots → 1 output slot.
+function ConnectorColumn({ count, unitH, inputSlotH, states }: {
+  count: number
+  unitH: number
+  inputSlotH: number
+  states: PathState[]
+}) {
+  return (
+    <div style={{ width: CONN_W, flexShrink: 0 }}>
+      {/* Spacer matching the round label height */}
+      <div style={{ height: LABEL_H }} />
+
+      {Array.from({ length: count }, (_, i) => {
+        const state = states[i] ?? 'tbd'
+        const color = pathColor(state)
+        const glow  = state === 'confirmed' ? `0 0 6px ${color}` : 'none'
+        const arm   = CONN_W / 2
+        // Y positions of the two input card centers within this unit
+        const topY  = inputSlotH / 2 - 0.5
+        const botY  = unitH - inputSlotH / 2 - 0.5
+        const midY  = unitH / 2 - 0.5
+
+        return (
+          <div
+            key={i}
+            className={state === 'projected' ? 'animate-pulse' : ''}
+            style={{ position: 'relative', height: unitH, width: CONN_W }}
+          >
+            {/* Top arm — horizontal from left edge to center */}
+            <div style={{
+              position: 'absolute', top: topY, left: 0,
+              width: arm, height: 1, background: color, boxShadow: glow,
+            }} />
+            {/* Bottom arm */}
+            <div style={{
+              position: 'absolute', top: botY, left: 0,
+              width: arm, height: 1, background: color, boxShadow: glow,
+            }} />
+            {/* Vertical bar connecting the two arms */}
+            <div style={{
+              position: 'absolute', top: topY, left: arm - 0.5,
+              width: 1, height: botY - topY + 1, background: color, boxShadow: glow,
+            }} />
+            {/* Output arm — horizontal from center to right edge */}
+            <div style={{
+              position: 'absolute', top: midY, left: arm,
+              width: arm, height: 1, background: color, boxShadow: glow,
+            }} />
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+// ── RoundColumn ──────────────────────────────────────────────────────────
+function RoundColumn({ label, matches, slotH, isFinal = false }: {
+  label: string
+  matches: BracketMatch[]
+  slotH: number
+  isFinal?: boolean
+}) {
+  return (
+    <div style={{ width: CARD_W, flexShrink: 0 }}>
+      <p className={`text-[9px] font-bold uppercase tracking-widest text-center ${
+        isFinal ? 'text-amber-400' : 'text-green-400/60'
+      }`} style={{ height: LABEL_H, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        {label}
+      </p>
+      <div>
+        {matches.map(m => (
+          <div key={m.id} style={{ height: slotH, display: 'flex', alignItems: 'center' }}>
+            <MatchNode match={m} />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ── Page ─────────────────────────────────────────────────────────────────
 export default function BracketPage() {
   const [data, setData]   = useState<BracketData | null>(null)
   const [error, setError] = useState(false)
 
   useEffect(() => {
     fetch('/api/bracket')
-      .then((r) => {
-        if (!r.ok) throw new Error('Failed')
-        return r.json()
-      })
+      .then(r => { if (!r.ok) throw new Error(); return r.json() })
       .then(setData)
       .catch(() => setError(true))
   }, [])
 
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-64 text-white/40 text-sm">
-        Failed to load bracket data. Please refresh.
-      </div>
-    )
+  if (error) return (
+    <div className="flex items-center justify-center min-h-64 text-white/40 text-sm">
+      Failed to load bracket data. Please refresh.
+    </div>
+  )
+  if (!data) return (
+    <div className="flex items-center justify-center min-h-64 text-white/40 text-sm animate-pulse">
+      Loading bracket...
+    </div>
+  )
+
+  const rounds = data.bracket
+  const bySlot = (arr: BracketMatch[]) => [...arr].sort((x, y) => x.slot - y.slot)
+  const r32    = bySlot(rounds['r32']   ?? [])
+  const r16    = bySlot(rounds['r16']   ?? [])
+  const qf     = bySlot(rounds['qf']    ?? [])
+  const sf     = bySlot(rounds['sf']    ?? [])
+  const final  = bySlot(rounds['final'] ?? [])
+  const third  = bySlot(rounds['3rd']   ?? [])
+
+  // Slot heights — each round slot is 2× the previous
+  const sR32   = SLOT_H          //  74px
+  const sR16   = SLOT_H * 2     // 148px
+  const sQF    = SLOT_H * 4     // 296px
+  const sSF    = SLOT_H * 8     // 592px
+  const sFinal = SLOT_H * 16    // 1184px
+
+  // Determine connector path state from each pair of feeder matches
+  function pairStates(feeders: BracketMatch[], n: number): PathState[] {
+    return Array.from({ length: n }, (_, i) => {
+      const sA = feeders[i * 2]     ? matchPathState(feeders[i * 2])     : 'tbd'
+      const sB = feeders[i * 2 + 1] ? matchPathState(feeders[i * 2 + 1]) : 'tbd'
+      if (sA === 'confirmed' && sB === 'confirmed') return 'confirmed'
+      if (sA === 'tbd'       && sB === 'tbd')       return 'tbd'
+      return 'projected'
+    })
   }
 
-  if (!data) {
-    return (
-      <div className="flex items-center justify-center min-h-64 text-white/40 text-sm animate-pulse">
-        Loading bracket...
-      </div>
-    )
-  }
-
-  const hasProjections = Object.values(data.bracket).flat().some(
+  const hasProjections = [...r32, ...r16, ...qf, ...sf, ...final].some(
     m => m.projected_home || m.projected_away
   )
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-10">
+    <div className="px-4 py-10">
 
       {/* Header */}
-      <div className="mb-10">
+      <div className="mb-8 max-w-4xl">
         <h1 className="text-4xl font-bold mb-2 font-display uppercase tracking-wide">Knockout Bracket</h1>
-        <p className="text-white/40 text-sm">
-          Starts June 29 · 32 teams, one trophy
-        </p>
+        <p className="text-white/40 text-sm">Starts June 29 · 32 teams, one trophy</p>
       </div>
 
       {/* Legend */}
       {hasProjections && (
-        <div className="flex items-center gap-6 mb-10 text-[11px]">
+        <div className="flex items-center gap-6 mb-8 text-[11px]">
           <div className="flex items-center gap-2">
-            <span className="inline-block w-4 h-3 rounded border border-white/20 bg-white/[0.06]" />
-            <span className="text-white/40">Confirmed</span>
+            <div className="w-6 h-px" style={{ background: '#4ade80', boxShadow: '0 0 6px #4ade80' }} />
+            <span className="text-white/40">Clear path</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="inline-block w-4 h-3 rounded border border-dashed border-amber-400/35 bg-amber-500/[0.04]" />
-            <span className="text-amber-400/50">Projected</span>
+            <div className="w-6 h-px bg-amber-400 animate-pulse" />
+            <span className="text-amber-400/50">Maybe path</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="inline-block w-4 h-3 rounded border border-white/8 bg-white/[0.02]" />
+            <div className="w-6 h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
             <span className="text-white/20">TBD</span>
           </div>
         </div>
       )}
 
-      {/* Rounds */}
-      <div className="space-y-12">
-        {ROUND_CONFIG.map(({ key, label, cols }) => {
-          const matches = data.bracket[key]
-          if (!matches || matches.length === 0) return null
-          const isFinal = key === 'final'
-          return (
-            <section key={key}>
-              <div className="flex items-center gap-3 mb-5">
-                <h2 className={`text-xs font-bold uppercase tracking-widest ${isFinal ? 'text-amber-400' : 'text-green-400'}`}>
-                  {label}
-                </h2>
-                <div className="flex-1 h-px bg-white/10" />
-                {!isFinal && (
-                  <span className="text-[10px] text-white/20">
-                    {matches.length} match{matches.length !== 1 ? 'es' : ''}
-                  </span>
-                )}
-              </div>
-              <div className={`grid gap-3 ${cols}`}>
-                {matches.map((m) => (
-                  <MatchCard key={m.id} match={m} />
-                ))}
-              </div>
-            </section>
-          )
-        })}
+      {/* Bracket tree — horizontal scroll */}
+      <div className="overflow-x-auto pb-6">
+        <div className="inline-flex items-start">
+
+          {r32.length > 0 && (
+            <RoundColumn label="Round of 32" matches={r32} slotH={sR32} />
+          )}
+
+          {r32.length > 0 && r16.length > 0 && (
+            <ConnectorColumn
+              count={8} unitH={sR16} inputSlotH={sR32}
+              states={pairStates(r32, 8)}
+            />
+          )}
+
+          {r16.length > 0 && (
+            <RoundColumn label="Round of 16" matches={r16} slotH={sR16} />
+          )}
+
+          {r16.length > 0 && qf.length > 0 && (
+            <ConnectorColumn
+              count={4} unitH={sQF} inputSlotH={sR16}
+              states={pairStates(r16, 4)}
+            />
+          )}
+
+          {qf.length > 0 && (
+            <RoundColumn label="Quarterfinals" matches={qf} slotH={sQF} />
+          )}
+
+          {qf.length > 0 && sf.length > 0 && (
+            <ConnectorColumn
+              count={2} unitH={sSF} inputSlotH={sQF}
+              states={pairStates(qf, 2)}
+            />
+          )}
+
+          {sf.length > 0 && (
+            <RoundColumn label="Semifinals" matches={sf} slotH={sSF} />
+          )}
+
+          {sf.length > 0 && final.length > 0 && (
+            <ConnectorColumn
+              count={1} unitH={sFinal} inputSlotH={sSF}
+              states={pairStates(sf, 1)}
+            />
+          )}
+
+          {final.length > 0 && (
+            <RoundColumn label="Final" matches={final} slotH={sFinal} isFinal />
+          )}
+
+        </div>
       </div>
 
-      <p className="text-center text-[11px] text-white/[0.15] mt-12">
+      {/* Third Place — separate section */}
+      {third.length > 0 && (
+        <div className="mt-10" style={{ maxWidth: CARD_W }}>
+          <p className="text-[9px] font-bold uppercase tracking-widest text-white/30 mb-3">
+            Third Place
+          </p>
+          <MatchNode match={third[0]} />
+        </div>
+      )}
+
+      <p className="text-[11px] text-white/[0.12] mt-10">
         Updated {new Date(data.updatedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
       </p>
+
     </div>
   )
 }
