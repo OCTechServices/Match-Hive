@@ -161,7 +161,7 @@ function MatchNode({ match }: { match: BracketMatch }) {
     : bothConf
       ? '1px solid rgba(255,255,255,0.13)'
       : hasProj
-        ? '1px dashed rgba(251,146,60,0.4)'
+        ? 'none'
         : '1px solid rgba(255,255,255,0.05)'
 
   const bg = isLive
