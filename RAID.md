@@ -1,6 +1,6 @@
 # RAID Log: match-hive
 # Tier 1 — Enterprise Grade | OCTech Services
-# Last Updated: 2026-06-13
+# Last Updated: 2026-06-26
 
 ---
 
@@ -27,6 +27,8 @@
 |---|---|---|---|---|
 | I01 | `metadataBase` not set — OG/Twitter image URLs resolve to localhost in build output | Build warning | Low | Open — pre-existing, non-blocking |
 | I02 | ICS uid uses old project name `watch-party-sphere` — may cause duplicate calendar entries if user re-downloads | Code review | Low | Resolved 2026-06-16 — uid updated to `mh-{id}@match-hive` |
+| I03 | `service_role` JWT hardcoded in `scripts/migrate-bracket-venues.mjs` and pushed to GitHub (commit b026b3b) | Security audit | Critical | Resolved 2026-06-26 — key removed from code (4a62874), new `sb_secret_...` key issued, legacy JWT disabled in Supabase |
+| I04 | `bracket_matches` table had stale IDs (`R32-1` etc.) mismatching code expectations (`M73–M104`) | Data mismatch | High | Resolved 2026-06-26 — table rebuilt via `seed-bracket-matches.mjs` with correct FIFA match IDs |
 
 ## Dependencies
 | ID | Dependency | Type | Notes |

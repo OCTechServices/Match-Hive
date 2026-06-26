@@ -2,7 +2,7 @@
 
 # match-hive — Project Context
 # Tier 1 — Enterprise Grade | OCTech Services
-# Last Updated: 2026-06-16
+# Last Updated: 2026-06-26
 
 ---
 
@@ -42,7 +42,7 @@
 | `/` | Static | Landing page — hero + 3 CTAs (Schedule, Bracket, Standings) |
 | `/schedule` | Dynamic (5m revalidate) | Full group stage schedule with live scores (FT/LIVE/HT) + TeamPicker |
 | `/standings` | Dynamic (5m revalidate) | Live group standings — 12 groups, auto-updates via football-data.org |
-| `/bracket` | Static | Live bracket viewer |
+| `/bracket` | Dynamic (revalidate=0, data 5m cached) | Live knockout bracket — reads from Supabase `bracket_matches` + live projections |
 | `/submit` | Static | Venue submission form — preserved but hidden from nav (re-enable by adding nav links) |
 | `/api/ics` | Dynamic | Returns `.ics` calendar file for a given team. CORS open — called by external Lovable frontend |
 | `/api/bracket` | Dynamic | Bracket data |
@@ -55,8 +55,12 @@
 
 **Key components:**
 - `components/TeamPicker.tsx` — client component, team selector + per-team schedule card + ICS download CTA
+- `components/BracketView.tsx` — client component, knockout bracket UI (mobile tabs + desktop tree)
 - `components/NavLogo.tsx` — nav logo
-- `lib/standings.ts` — pure `computeGroupStandings()` utility + `StandingRow` type (local fallback, not used in production flow)
+- `data/bracket.ts` — `BRACKET_SEED` (M73–M104 structure) + `BracketMatch` interface
+- `lib/bracket-seeding.ts` — `R32_SEEDING` keyed by match ID (M73–M88); maps slots to group positions
+- `lib/standings.ts` — pure `computeGroupStandings()` utility + `StandingRow` type
+- `scripts/seed-bracket-matches.mjs` — rebuilds `bracket_matches` table. Run: `node --env-file=.env.local scripts/seed-bracket-matches.mjs`
 
 ---
 
