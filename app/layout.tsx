@@ -17,7 +17,7 @@ const oswald = Oswald({
 })
 
 export const metadata: Metadata = {
-  title: 'Match-Hive — FIFA World Cup 2026 Watch Parties',
+  title: 'Match-Hive — FIFA World Cup 2026',
   description:
     'Your FIFA World Cup 2026 hub — download your team\'s match schedule with kickoff reminders and track the live knockout bracket.',
 }
