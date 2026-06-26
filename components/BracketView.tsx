@@ -158,36 +158,40 @@ function MatchNode({ match, isFinal = false, fullWidth = false }: {
   const metaH   = cardH - headerH - teamH * 2
 
   const border = isLive
-    ? '1px solid #4ade80'
+    ? '1.5px solid #4ade80'
     : isChamp
-      ? '1px solid rgba(212,175,55,0.65)'
+      ? '1.5px solid rgba(212,175,55,0.75)'
       : isFinal && anyKnown
-        ? '1px solid rgba(212,175,55,0.35)'
+        ? '1px solid rgba(212,175,55,0.45)'
         : bothConf
-          ? '1px solid rgba(255,255,255,0.12)'
+          ? '1px solid rgba(74,222,128,0.30)'
           : hasProj
             ? 'none'
             : '1px solid rgba(255,255,255,0.05)'
 
   const bg = isLive
-    ? 'rgba(74,222,128,0.06)'
+    ? 'rgba(74,222,128,0.08)'
     : isChamp
-      ? 'rgba(212,175,55,0.09)'
+      ? 'rgba(212,175,55,0.10)'
       : isFinal && anyKnown
-        ? 'rgba(212,175,55,0.04)'
+        ? 'rgba(212,175,55,0.05)'
         : bothConf
-          ? 'rgba(255,255,255,0.05)'
+          ? 'rgba(74,222,128,0.05)'
           : hasProj
-            ? 'rgba(251,146,60,0.04)'
+            ? 'rgba(251,146,60,0.06)'
             : 'rgba(255,255,255,0.015)'
 
   const shadow = isLive
-    ? '0 0 16px rgba(74,222,128,0.20)'
+    ? '0 0 24px rgba(74,222,128,0.35), 0 0 8px rgba(74,222,128,0.20)'
     : isChamp
-      ? '0 0 28px rgba(212,175,55,0.22)'
+      ? '0 0 36px rgba(212,175,55,0.30), 0 0 12px rgba(212,175,55,0.20)'
       : isFinal && anyKnown
-        ? '0 0 16px rgba(212,175,55,0.10)'
-        : 'none'
+        ? '0 0 20px rgba(212,175,55,0.15)'
+        : bothConf
+          ? '0 0 12px rgba(74,222,128,0.12)'
+          : hasProj
+            ? '0 0 16px rgba(251,146,60,0.20)'
+            : 'none'
 
   return (
     <div style={{
@@ -198,11 +202,19 @@ function MatchNode({ match, isFinal = false, fullWidth = false }: {
     }}>
       {/* Pulsating projected border overlay */}
       {hasProj && !isLive && (
-        <div className="animate-pulse" style={{
-          position: 'absolute', inset: 0, borderRadius: 12,
-          border: '1px dashed rgba(251,146,60,0.55)',
-          pointerEvents: 'none', zIndex: 1,
-        }} />
+        <>
+          <div className="animate-pulse" style={{
+            position: 'absolute', inset: 0, borderRadius: 12,
+            border: '1.5px dashed rgba(251,146,60,0.85)',
+            boxShadow: '0 0 20px rgba(251,146,60,0.20), inset 0 0 40px rgba(251,146,60,0.04)',
+            pointerEvents: 'none', zIndex: 1,
+          }} />
+          <div style={{
+            position: 'absolute', top: 0, left: '15%', right: '15%', height: 1,
+            background: 'linear-gradient(90deg, transparent, rgba(251,146,60,0.70), transparent)',
+            pointerEvents: 'none', zIndex: 2,
+          }} />
+        </>
       )}
 
       {/* Final gold top accent line */}
@@ -304,7 +316,11 @@ function ConnectorColumn({ count, unitH, inputSlotH, states }: {
       {Array.from({ length: count }, (_, i) => {
         const state = states[i] ?? 'tbd'
         const color = pathColor(state)
-        const glow  = state === 'confirmed' ? `0 0 6px ${color}` : 'none'
+        const glow  = state === 'confirmed'
+          ? `0 0 8px ${color}, 0 0 16px rgba(74,222,128,0.15)`
+          : state === 'projected'
+            ? '0 0 6px rgba(251,146,60,0.45)'
+            : 'none'
         const arm   = CONN_W / 2
         const topY  = inputSlotH / 2 - 0.5
         const botY  = unitH - inputSlotH / 2 - 0.5
@@ -400,32 +416,60 @@ export default function BracketView({ matches }: { matches: BracketMatch[] }) {
 
       {/* Header */}
       <div className="mb-8 max-w-4xl">
-        <h1 className="text-4xl font-bold mb-2 font-display uppercase tracking-wide">
+        <h1 className="text-4xl font-bold mb-3 font-display uppercase tracking-wide">
           Knockout Bracket
         </h1>
+        <div style={{
+          width: 56, height: 2, marginBottom: 12,
+          background: 'linear-gradient(90deg, #4ade80, rgba(74,222,128,0.15))',
+          boxShadow: '0 0 10px rgba(74,222,128,0.40)',
+          borderRadius: 1,
+        }} />
         <p className="text-white/40 text-sm">Starts June 28 · 32 teams, one trophy</p>
       </div>
 
       {/* Legend */}
-      <div className="flex items-center gap-6 mb-8 text-[11px]">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-px" style={{ background: '#4ade80', boxShadow: '0 0 6px #4ade80' }} />
-          <span className="text-white/40">Clear path</span>
+      <div className="flex flex-wrap items-center gap-2 mb-8">
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 6,
+          padding: '5px 12px', borderRadius: 8,
+          background: 'rgba(74,222,128,0.06)',
+          border: '1px solid rgba(74,222,128,0.28)',
+          boxShadow: '0 0 10px rgba(74,222,128,0.10)',
+        }}>
+          <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 6px #4ade80' }} />
+          <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.04em', color: 'rgba(74,222,128,0.80)' }}>Confirmed</span>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-px bg-orange-400 animate-pulse" />
-          <span className="text-orange-400/60">Maybe path</span>
+        <div className="animate-pulse" style={{
+          display: 'flex', alignItems: 'center', gap: 6,
+          padding: '5px 12px', borderRadius: 8,
+          background: 'rgba(251,146,60,0.06)',
+          border: '1.5px dashed rgba(251,146,60,0.70)',
+          boxShadow: '0 0 10px rgba(251,146,60,0.15)',
+        }}>
+          <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#fb923c' }} />
+          <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.04em', color: 'rgba(251,146,60,0.80)' }}>Projected</span>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
-          <span className="text-white/20">TBD</span>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 6,
+          padding: '5px 12px', borderRadius: 8,
+          background: 'rgba(255,255,255,0.02)',
+          border: '1px solid rgba(255,255,255,0.08)',
+        }}>
+          <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'rgba(255,255,255,0.18)' }} />
+          <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.04em', color: 'rgba(255,255,255,0.25)' }}>TBD</span>
         </div>
       </div>
 
       {!hasProjections && (
-        <p className="text-white/30 text-sm mb-8">
+        <div style={{
+          padding: '10px 14px', borderRadius: 10, marginBottom: 24,
+          background: 'rgba(255,255,255,0.02)',
+          border: '1px solid rgba(255,255,255,0.07)',
+          fontSize: 13, color: 'rgba(255,255,255,0.32)',
+        }}>
           Projections load from live standings — check back once group matches are underway.
-        </p>
+        </div>
       )}
 
       {/* ── Mobile: Round tabs ─────────────────────────────────────────── */}
