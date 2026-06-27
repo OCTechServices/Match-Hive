@@ -1,0 +1,104 @@
+name: Content Engine — Match Events
+
+# Polls every 30 min during global match windows.
+# Lightweight detect job checks the API first — full publish job only runs
+# when a match is at half-time (PAUSED) or just finished (FINISHED, <3h ago).
+# Deduplication via posted_events.json prevents double-posting.
+#
+# Match windows (UTC):
+#   17:00–23:59 — covers early/afternoon/evening kickoffs
+#   00:00–06:59 — covers late-night kickoffs (e.g. 23:30, 02:00, 03:00 UTC)
+
+on:
+  schedule:
+    - cron: '0,30 17-23 * * *'   # every 30 min, 17:00–23:30 UTC
+    - cron: '0,30 0-6 * * *'     # every 30 min, 00:00–06:30 UTC
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Force mode: halftime | post-match (blank = auto-detect)'
+        required: false
+        default: ''
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      mode: ${{ steps.detect.outputs.mode }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install minimal deps for detection
+        run: pip install requests
+
+      - name: Detect match event
+        id: detect
+        working-directory: scripts/content-engine
+        env:
+          FOOTBALL_DATA_API_KEY: ${{ secrets.FOOTBALL_DATA_API_KEY }}
+        run: |
+          FORCED="${{ github.event.inputs.mode }}"
+          if [ -n "$FORCED" ]; then
+            echo "mode=$FORCED" >> $GITHUB_OUTPUT
+            echo "Forced mode: $FORCED"
+            exit 0
+          fi
+
+          MODE=$(python - <<'EOF'
+import sys
+from signal_pull import get_halftime_matches, get_recently_finished_matches
+ht = get_halftime_matches()
+if ht:
+    print("halftime")
+    sys.exit(0)
+ft = get_recently_finished_matches(window_hours=3)
+print("post-match" if ft else "")
+EOF
+)
+          echo "mode=$MODE" >> $GITHUB_OUTPUT
+          echo "Detected mode: '$MODE'"
+
+  publish:
+    needs: detect
+    if: needs.detect.outputs.mode != ''
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        working-directory: scripts/content-engine
+        run: |
+          pip install -r requirements.txt
+          playwright install chromium
+
+      - name: Run content engine
+        working-directory: scripts/content-engine
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          FOOTBALL_DATA_API_KEY: ${{ secrets.FOOTBALL_DATA_API_KEY }}
+          IG_ACCESS_TOKEN: ${{ secrets.MATCH_HIVE_IG_ACCESS_TOKEN }}
+          IG_USER_ID: ${{ secrets.MATCH_HIVE_IG_USER_ID }}
+          IMGBB_API_KEY: ${{ secrets.IMGBB_API_KEY }}
+          TWITTER_API_KEY: ${{ secrets.MATCH_HIVE_TWITTER_API_KEY }}
+          TWITTER_API_SECRET: ${{ secrets.MATCH_HIVE_TWITTER_API_SECRET }}
+          TWITTER_ACCESS_TOKEN: ${{ secrets.MATCH_HIVE_TWITTER_ACCESS_TOKEN }}
+          TWITTER_ACCESS_SECRET: ${{ secrets.MATCH_HIVE_TWITTER_ACCESS_SECRET }}
+        run: python main.py --mode=${{ needs.detect.outputs.mode }}
+
+      - name: Commit posted events log
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add scripts/content-engine/output/posted_events.json || true
+          git diff --staged --quiet || git commit -m "chore: log event post [skip ci]"
+          git push || true

@@ -199,6 +199,132 @@ Return only the JSON object."""
     }
 
 
+def generate_halftime_posts(brief: dict) -> tuple[dict, dict]:
+    """Generate IG + Twitter posts for a half-time update."""
+    matches = brief["halftime_matches"]
+    phase = brief["tournament_phase"]
+    post_key = brief["post_key"]
+
+    prompt_ig = f"""Generate a half-time Instagram post for @match.hive.
+
+Match-Hive: FIFA World Cup 2026 tracker — match-hive.vercel.app
+Brand voice: fan-first, direct, no hype. Like texting a friend watching the same game.
+
+Half-time data:
+{json.dumps(brief, indent=2)}
+
+Return a single JSON object:
+{{
+  "hook": "Half-time score(s) with flag emojis. Format: '⏸ 🇲🇽 Mexico 1 – 0 🇺🇸 USA'. If two matches, list both on separate lines in the hook string.",
+  "body": "1-2 sentences on how the first half played out. Specific — mention teams, trends, what to watch. No hype words.",
+  "eyebrow": "{phase} · Half-Time",
+  "cta": "Follow live → match-hive.vercel.app",
+  "hashtags": "4-6 hashtags — always #WorldCup2026 #FIFA2026 + team/match tags",
+  "template": "Half-Time Update",
+  "source_signal": "One sentence describing what data shaped this post"
+}}
+
+Rules: Score must be accurate. If 0-0 say so. No 'epic', 'stunning', 'incredible'.
+Return only the JSON object. No markdown."""
+
+    prompt_tw = f"""Generate a half-time tweet for Match-Hive.
+
+Half-time data:
+{json.dumps(brief, indent=2)}
+
+Tone: reactive, fan voice. Short. Lead with the score(s). Add one sharp observation.
+Under 240 characters preferred. Lowercase is fine.
+
+Return a single JSON object:
+{{
+  "body": "Complete tweet text",
+  "topic": "halftime",
+  "twitter_published": false
+}}
+
+Return only the JSON object. No markdown."""
+
+    client = _client()
+    resp_ig = client.messages.create(
+        model="claude-opus-4-6", max_tokens=1024, temperature=0.6,
+        messages=[{"role": "user", "content": prompt_ig}],
+    )
+    ig_post = _parse_json(resp_ig.content[0].text)
+
+    resp_tw = client.messages.create(
+        model="claude-opus-4-6", max_tokens=512, temperature=0.7,
+        messages=[{"role": "user", "content": prompt_tw}],
+    )
+    tw_post = _parse_json(resp_tw.content[0].text)
+
+    ig_post.update({"scheduled_date": brief["date"], "post_key": post_key, "status": "Draft", "ig_published": False})
+    tw_post.update({"scheduled_date": brief["date"], "post_key": post_key, "platform": "twitter", "status": "Draft"})
+    return ig_post, tw_post
+
+
+def generate_post_match_posts(brief: dict) -> tuple[dict, dict]:
+    """Generate IG + Twitter posts for full-time result(s)."""
+    matches = brief["finished_matches"]
+    phase = brief["tournament_phase"]
+    post_key = brief["post_key"]
+
+    prompt_ig = f"""Generate a full-time result Instagram post for @match.hive.
+
+Match-Hive: FIFA World Cup 2026 tracker — match-hive.vercel.app
+Brand voice: fan-first, direct, no hype.
+
+Result data:
+{json.dumps(brief, indent=2)}
+
+Return a single JSON object:
+{{
+  "hook": "If one match: '🇧🇷 Brazil 3 – 0 🇨🇴 Colombia' (flags + score). If two matches: lead with the bigger result or upset.",
+  "body": "2-3 sentences. What the result means — who advances, who's eliminated, bracket implications. Specific and factual.",
+  "eyebrow": "{phase} · Full Time",
+  "cta": "Bracket updated → match-hive.vercel.app",
+  "hashtags": "5-7 hashtags — #WorldCup2026 #FIFA2026 + team/round tags",
+  "template": "Result Recap",
+  "source_signal": "One sentence describing what data shaped this post"
+}}
+
+Rules: Hook is the score — no narrative text in the hook. Body explains significance. No hype words.
+Return only the JSON object. No markdown."""
+
+    prompt_tw = f"""Generate a full-time result tweet for Match-Hive.
+
+Result data:
+{json.dumps(brief, indent=2)}
+
+Tone: reactive, fan voice. Lead with the result and what it means.
+If knockout: who advances. Call out upsets.
+
+Return a single JSON object:
+{{
+  "body": "Complete tweet text",
+  "topic": "post-match",
+  "twitter_published": false
+}}
+
+Return only the JSON object. No markdown."""
+
+    client = _client()
+    resp_ig = client.messages.create(
+        model="claude-opus-4-6", max_tokens=1024, temperature=0.6,
+        messages=[{"role": "user", "content": prompt_ig}],
+    )
+    ig_post = _parse_json(resp_ig.content[0].text)
+
+    resp_tw = client.messages.create(
+        model="claude-opus-4-6", max_tokens=512, temperature=0.7,
+        messages=[{"role": "user", "content": prompt_tw}],
+    )
+    tw_post = _parse_json(resp_tw.content[0].text)
+
+    ig_post.update({"scheduled_date": brief["date"], "post_key": post_key, "status": "Draft", "ig_published": False})
+    tw_post.update({"scheduled_date": brief["date"], "post_key": post_key, "platform": "twitter", "status": "Draft"})
+    return ig_post, tw_post
+
+
 if __name__ == "__main__":
     test_brief = {
         "date": "2026-06-23",

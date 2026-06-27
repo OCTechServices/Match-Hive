@@ -156,6 +156,73 @@ def build_signal_brief() -> dict:
     }
 
 
+def get_halftime_matches() -> list[dict]:
+    """Return all matches currently at half-time (API status PAUSED)."""
+    try:
+        data = _fd_get("/competitions/WC/matches?status=PAUSED")
+        return [_parse_match(m) for m in data.get("matches", [])]
+    except Exception as e:
+        print(f"  Halftime check error: {e}")
+        return []
+
+
+def get_recently_finished_matches(window_hours: int = 3) -> list[dict]:
+    """Return FINISHED WC matches whose kickoff falls within the last window_hours.
+
+    A 3-hour window naturally separates consecutive match slots (R32 matches are
+    typically 2 h+ apart) while grouping simultaneous same-slot matches together.
+    Deduplication via posted_events.json prevents double-posting.
+    """
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=window_hours)
+    try:
+        data = _fd_get("/competitions/WC/matches?status=FINISHED")
+        return [
+            _parse_match(m)
+            for m in data.get("matches", [])
+            if datetime.fromisoformat(m["utcDate"].replace("Z", "+00:00")) >= cutoff
+        ]
+    except Exception as e:
+        print(f"  Recent results error: {e}")
+        return []
+
+
+def _event_post_key(matches: list[dict], mode: str) -> str:
+    """Stable deduplication key: UTC kickoff slot + mode."""
+    if not matches:
+        return f"unknown-{mode}"
+    utc = matches[0]["utc_date"]  # e.g. "2026-06-27T21:00:00Z"
+    slot = utc[:16].replace("T", "-").replace(":", "")  # "2026-06-27-2100"
+    return f"{slot}-{mode}"
+
+
+def build_halftime_brief(matches: list[dict]) -> dict:
+    """Signal brief for a half-time post."""
+    from zoneinfo import ZoneInfo
+    et_tz = ZoneInfo("America/New_York")
+    today = datetime.now(et_tz).date()
+    return {
+        "date": today.strftime("%Y-%m-%d"),
+        "tournament_phase": _get_phase(today),
+        "mode": "halftime",
+        "halftime_matches": matches,
+        "post_key": _event_post_key(matches, "ht"),
+    }
+
+
+def build_post_match_brief(matches: list[dict]) -> dict:
+    """Signal brief for a post-match post."""
+    from zoneinfo import ZoneInfo
+    et_tz = ZoneInfo("America/New_York")
+    today = datetime.now(et_tz).date()
+    return {
+        "date": today.strftime("%Y-%m-%d"),
+        "tournament_phase": _get_phase(today),
+        "mode": "post-match",
+        "finished_matches": matches,
+        "post_key": _event_post_key(matches, "ft"),
+    }
+
+
 if __name__ == "__main__":
     import json
     brief = build_signal_brief()
