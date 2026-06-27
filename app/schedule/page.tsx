@@ -56,6 +56,7 @@ const FD_NAME_MAP: Record<string, string> = {
   'Cape Verde Islands': 'Cape Verde',
   'Congo DR': 'DR Congo',
   'Czech Republic': 'Czechia',
+  'Curaçao': 'Curacao',
 }
 
 async function fetchScores(): Promise<Record<string, ScoreData>> {
@@ -267,8 +268,8 @@ export default async function SchedulePage() {
                         key={m.id}
                         match={m}
                         score={
-                          scores[m.dateUtc.substring(0, 16)] ??
-                          scores[`${m.homeTeam}|${m.awayTeam}`]
+                          scores[`${m.homeTeam}|${m.awayTeam}`] ??
+                          scores[m.dateUtc.substring(0, 16)]
                         }
                       />
                     ))}
