@@ -11,7 +11,7 @@ name: Content Engine — Match Events
 
 on:
   schedule:
-    - cron: '0,15,30,45 17-23 * * *'   # every 15 min, 17:00–23:45 UTC
+    - cron: '0,15,30,45 16-23 * * *'   # every 15 min, 16:00–23:45 UTC (covers 16:00 UTC kickoffs)
     - cron: '0,15,30,45 0-6 * * *'     # every 15 min, 00:00–06:45 UTC
   workflow_dispatch:
     inputs:
