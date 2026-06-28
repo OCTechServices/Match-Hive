@@ -162,7 +162,8 @@ def get_halftime_matches() -> list[dict]:
         data = _fd_get("/competitions/WC/matches?status=PAUSED")
         return [_parse_match(m) for m in data.get("matches", [])]
     except Exception as e:
-        print(f"  Halftime check error: {e}")
+        import sys
+        print(f"  Halftime check error: {e}", file=sys.stderr)
         return []
 
 
@@ -176,13 +177,17 @@ def get_recently_finished_matches(window_hours: int = 3) -> list[dict]:
     cutoff = datetime.now(timezone.utc) - timedelta(hours=window_hours)
     try:
         data = _fd_get("/competitions/WC/matches?status=FINISHED")
-        return [
-            _parse_match(m)
-            for m in data.get("matches", [])
-            if datetime.fromisoformat(m["utcDate"].replace("Z", "+00:00")) >= cutoff
-        ]
+        recent = []
+        for m in data.get("matches", []):
+            utc = m.get("utcDate")
+            if not utc:
+                continue
+            if datetime.fromisoformat(utc.replace("Z", "+00:00")) >= cutoff:
+                recent.append(_parse_match(m))
+        return recent
     except Exception as e:
-        print(f"  Recent results error: {e}")
+        import sys
+        print(f"  Recent results error: {e}", file=sys.stderr)
         return []
 
 
