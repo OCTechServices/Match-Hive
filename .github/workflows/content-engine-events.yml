@@ -48,18 +48,7 @@ jobs:
             echo "Forced mode: $FORCED"
             exit 0
           fi
-
-          MODE=$(python - <<'EOF'
-import sys
-from signal_pull import get_halftime_matches, get_recently_finished_matches
-ht = get_halftime_matches()
-if ht:
-    print("halftime")
-    sys.exit(0)
-ft = get_recently_finished_matches(window_hours=3)
-print("post-match" if ft else "")
-EOF
-)
+          MODE=$(python3 detect_event.py)
           echo "mode=$MODE" >> $GITHUB_OUTPUT
           echo "Detected mode: '$MODE'"
 
