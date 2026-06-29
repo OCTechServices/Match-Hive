@@ -2,7 +2,7 @@
 
 # match-hive — Project Context
 # Tier 1 — Enterprise Grade | OCTech Services
-# Last Updated: 2026-06-26
+# Last Updated: 2026-06-28
 
 ---
 
@@ -95,7 +95,28 @@ The ICS API returns UTC and lets the user's calendar app handle local conversion
 
 ---
 
-## 7. Commands
+## 7. Content Engine (`scripts/content-engine/`)
+
+Daily Python pipeline: `signal_pull.py` → `content.py` (Claude) → `render.py` (Playwright) → imgbb → Instagram Graph API + Twitter.
+
+**Modes:**
+- `python main.py` — daily recap (IG + Twitter + FB copy)
+- `python main.py --twitter-only` — Twitter only
+- `python main.py --mode=halftime` — half-time post for currently PAUSED match
+- `python main.py --mode=post-match` — FT post for matches finished within last 3 hours
+- `python main.py --generate-only` — generate + render, skip publish (works with all modes)
+
+**Cron workflows:**
+- `content-engine-daily.yml` — 11/15/19/23 UTC (Twitter-only) + 05 UTC (full run)
+- `content-engine-events.yml` — polls every 15 min during 16–23 UTC and 00–06 UTC. Lightweight detect job (`pip install requests` only) auto-detects PAUSED/FINISHED matches; publish job only runs on event. Deduplication via `output/posted_events.json`.
+
+**Key files:** `detect_event.py` (lightweight event checker for CI), `output/posted_events.json` (dedup log — committed to repo).
+
+**Score lookup (schedule page):** Always use team-name key first, datetime fallback. Datetime keys collide on simultaneous kickoffs. `FD_NAME_MAP` in `app/schedule/page.tsx` must include accent variants (e.g. `Curaçao`).
+
+---
+
+## 8. Commands
 
 ```bash
 npm run dev      # local dev server
