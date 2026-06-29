@@ -277,26 +277,43 @@ function MatchNode({ match, isFinal = false, fullWidth = false }: {
         />
       </div>
 
-      {/* Meta — date / venue / city */}
+      {/* Meta — date / venue / city + calendar download */}
       <div style={{
-        height: metaH, display: 'flex', flexDirection: 'column',
-        justifyContent: 'center', padding: '0 10px', gap: 2,
+        height: metaH, display: 'flex', alignItems: 'center',
+        padding: '0 10px', gap: 6,
       }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1, minWidth: 0 }}>
+          {match.date_utc && (
+            <span style={{
+              fontSize: 9, fontWeight: 500, color: 'rgba(255,255,255,0.65)',
+              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+            }}>
+              {formatMeta(match.date_utc)}
+            </span>
+          )}
+          {(match.venue || match.city) && (
+            <span style={{
+              fontSize: 9, color: 'rgba(255,255,255,0.50)',
+              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+            }}>
+              {[match.venue, match.city].filter(Boolean).join(' · ')}
+            </span>
+          )}
+        </div>
         {match.date_utc && (
-          <span style={{
-            fontSize: 9, fontWeight: 500, color: 'rgba(255,255,255,0.65)',
-            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-          }}>
-            {formatMeta(match.date_utc)}
-          </span>
-        )}
-        {(match.venue || match.city) && (
-          <span style={{
-            fontSize: 9, color: 'rgba(255,255,255,0.50)',
-            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-          }}>
-            {[match.venue, match.city].filter(Boolean).join(' · ')}
-          </span>
+          <a
+            href={`/api/bracket-ics?match=${match.id}`}
+            title="Add to calendar"
+            className="opacity-30 hover:opacity-70 transition-opacity"
+            style={{ flexShrink: 0, color: 'rgba(255,255,255,0.85)', display: 'flex', alignItems: 'center', textDecoration: 'none' }}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+          </a>
         )}
       </div>
     </div>
