@@ -12,5 +12,33 @@
     "ig_published": true,
     "image_path": "output/post_01_result.png",
     "image_url": "https://i.ibb.co/B25pDt36/e5dbfa8b0276.png"
+  },
+  {
+    "hook": "🇹🇷 Türkiye 3 – 2 USA 🇺🇸",
+    "body": "Türkiye handed the hosts their first loss of the tournament — but the USA still top Group D on 6 points. Ecuador beat Germany 2-1 🇪🇨🇩🇪 but finish 3rd in Group E behind Ivory Coast on goal difference. Today's a big one: 🇳🇴 Norway vs 🇫🇷 France is a straight fight for the Group I top spot — both on 6 points, separated by a single goal. And 🇺🇾 Uruguay vs 🇪🇸 Spain decides who controls Group H.",
+    "eyebrow": "Group Stage · Day 16 — Recap + Preview",
+    "cta": "Track every match → match-hive.vercel.app",
+    "hashtags": "#WorldCup2026 #FIFA2026 #TURUSA #NorwayFrance #UruguaySpain #GroupStage #MatchDay16",
+    "template": "Result Recap",
+    "source_signal": "Türkiye 3-2 USA was the headline result from yesterday; Norway-France and Uruguay-Spain are today's decisive group-stage fixtures with top-spot implications.",
+    "scheduled_date": "2026-06-26",
+    "status": "Draft",
+    "ig_published": false,
+    "image_path": "output/post_01_result.png",
+    "image_url": "https://i.ibb.co/MknKq6D8/448c001ebfdf.png"
+  },
+  {
+    "hook": "Group stage done. Knockout round is live. 🏆",
+    "body": "Yesterday wrapped it up: 🇦🇷 Argentina topped Group J with a perfect 9 points. 🇨🇴 Colombia held 🇵🇹 Portugal to a 0–0 draw to win Group K. 🇬🇧 England took Group L. 🇩🇿 Algeria and 🇦🇹 Austria drew 3–3 in a wild one but both go home. And today's first Round of 32 match is already in the books — 🇨🇦 Canada 1–0 🇿🇦 South Africa. The bracket is filling up.",
+    "eyebrow": "Group Stage Final Day + Round of 32",
+    "cta": "Track every match → match-hive.vercel.app",
+    "hashtags": "#WorldCup2026 #FIFA2026 #RoundOf32 #Argentina #England #Colombia #Canada",
+    "template": "Result Recap",
+    "source_signal": "Six group stage results from yesterday closing Groups J, K, L plus today's first Round of 32 match (Canada 1–0 South Africa) signal the tournament transition point — recap + bracket preview angle.",
+    "scheduled_date": "2026-06-28",
+    "status": "Draft",
+    "ig_published": false,
+    "image_path": "output/post_01_result.png",
+    "image_url": "https://i.ibb.co/vCwQFJhx/afd4fdf171c8.png"
   }
 ]

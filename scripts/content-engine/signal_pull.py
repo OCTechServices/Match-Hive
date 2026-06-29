@@ -62,13 +62,13 @@ def _get_phase(d: date) -> str:
 
 def _parse_match(m: dict) -> dict:
     return {
-        "home": _resolve(m["homeTeam"]["name"]),
-        "away": _resolve(m["awayTeam"]["name"]),
-        "utc_date": m["utcDate"],
+        "home": _resolve((m.get("homeTeam") or {}).get("name") or "TBD"),
+        "away": _resolve((m.get("awayTeam") or {}).get("name") or "TBD"),
+        "utc_date": m.get("utcDate"),
         "status": m["status"],
-        "home_score": m["score"]["fullTime"].get("home"),
-        "away_score": m["score"]["fullTime"].get("away"),
-        "group": m.get("group", "").replace("GROUP_", "Group "),
+        "home_score": (m.get("score") or {}).get("fullTime", {}).get("home"),
+        "away_score": (m.get("score") or {}).get("fullTime", {}).get("away"),
+        "group": (m.get("group") or "").replace("GROUP_", "Group "),
         "stage": m.get("stage", ""),
     }
 
