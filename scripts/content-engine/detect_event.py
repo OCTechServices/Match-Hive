@@ -11,5 +11,5 @@ if ht:
     print("halftime")
     sys.exit(0)
 
-ft = get_recently_finished_matches(window_hours=3)
+ft = get_recently_finished_matches(window_hours=5)
 print("post-match" if ft else "")

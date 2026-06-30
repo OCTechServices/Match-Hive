@@ -9,6 +9,9 @@ name: Content Engine — Match Events
 #   17:00–23:59 — covers early/afternoon/evening kickoffs
 #   00:00–06:59 — covers late-night kickoffs (e.g. 23:30, 02:00, 03:00 UTC)
 
+permissions:
+  contents: write   # required to commit posted_events.json after each publish
+
 on:
   schedule:
     - cron: '0,15,30,45 16-23 * * *'   # every 15 min, 16:00–23:45 UTC (covers 16:00 UTC kickoffs)

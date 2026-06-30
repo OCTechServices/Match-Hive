@@ -215,7 +215,7 @@ def run_post_match(publish: bool = True) -> None:
     from signal_pull import get_recently_finished_matches, build_post_match_brief
 
     print("[1/4] Checking for recently finished matches...")
-    matches = get_recently_finished_matches(window_hours=3)
+    matches = get_recently_finished_matches(window_hours=5)
     if not matches:
         print("  No matches finished in the last 3 hours — exiting.")
         return
