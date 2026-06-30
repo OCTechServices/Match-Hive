@@ -210,12 +210,12 @@ def run_halftime(publish: bool = True) -> None:
     print(f"\n=== Done (Half-Time · {post_key}) ===")
 
 
-def run_post_match(publish: bool = True) -> None:
+def run_post_match(publish: bool = True, window_hours: int = 5) -> None:
     print("=== Match-Hive Content Engine — Post-Match ===\n")
     from signal_pull import get_recently_finished_matches, build_post_match_brief
 
-    print("[1/4] Checking for recently finished matches...")
-    matches = get_recently_finished_matches(window_hours=5)
+    print(f"[1/4] Checking for recently finished matches (window={window_hours}h)...")
+    matches = get_recently_finished_matches(window_hours=window_hours)
     if not matches:
         print("  No matches finished in the last 3 hours — exiting.")
         return
@@ -274,10 +274,11 @@ if __name__ == "__main__":
     generate_only = "--generate-only" in sys.argv
     twitter_only  = "--twitter-only"  in sys.argv
     mode = next((a.split("=")[1] for a in sys.argv if a.startswith("--mode=")), "daily")
+    window_hours  = int(next((a.split("=")[1] for a in sys.argv if a.startswith("--window-hours=")), "5"))
 
     if mode == "halftime":
         run_halftime(publish=not generate_only)
     elif mode == "post-match":
-        run_post_match(publish=not generate_only)
+        run_post_match(publish=not generate_only, window_hours=window_hours)
     else:
         run(publish=not generate_only, twitter_only=twitter_only)
