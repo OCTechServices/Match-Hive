@@ -121,11 +121,6 @@ def run(dry_run: bool = False) -> None:
     print("[1/3] Fetching bracket_matches from Supabase...")
     sb_rows = sb_get_all()
     sb_by_id: dict[str, dict] = {r["id"]: r for r in sb_rows}
-    # UTC key → bracket match id (for matching API results)
-    sb_utc_to_id: dict[str, str] = {
-        _utc_key(r["date_utc"]): r["id"]
-        for r in sb_rows if r.get("date_utc")
-    }
     print(f"  Loaded {len(sb_rows)} rows")
 
     # 2. All WC matches from football-data.org
@@ -139,14 +134,6 @@ def run(dry_run: bool = False) -> None:
     api_matches = data.get("matches", [])
     print(f"  Got {len(api_matches)} total matches")
 
-    # Index only the ones that correspond to bracket slots (by UTC key)
-    api_by_utc: dict[str, dict] = {}
-    for m in api_matches:
-        key = _utc_key(m.get("utcDate"))
-        if key and key in sb_utc_to_id:
-            api_by_utc[key] = m
-    print(f"  Matched {len(api_by_utc)} to bracket slots")
-
     # 3. Sync each bracket row
     print("\n[3/3] Processing rows...\n")
     # Collect (match_id, winner, home_name, away_name) for post-loop advancement
@@ -155,7 +142,25 @@ def run(dry_run: bool = False) -> None:
     for sb_row in sorted(sb_rows, key=lambda r: r.get("date_utc") or ""):
         match_id = sb_row["id"]
         key = _utc_key(sb_row.get("date_utc"))
-        api_m = api_by_utc.get(key) if key else None
+
+        # Find matching API match: same UTC minute AND (teams match if known, or best candidate)
+        api_m = None
+        if key:
+            candidates = [m for m in api_matches if _utc_key(m.get("utcDate")) == key]
+            if len(candidates) == 1:
+                api_m = candidates[0]
+            elif len(candidates) > 1:
+                # Prefer the one whose teams match what Supabase already has
+                sb_home = sb_row.get("home_team")
+                sb_away = sb_row.get("away_team")
+                for c in candidates:
+                    ch = _resolve((c.get("homeTeam") or {}).get("name") or "")
+                    ca = _resolve((c.get("awayTeam") or {}).get("name") or "")
+                    if (not sb_home or ch == sb_home) and (not sb_away or ca == sb_away):
+                        api_m = c
+                        break
+                if not api_m:
+                    api_m = candidates[0]  # fallback
 
         if not api_m:
             continue
