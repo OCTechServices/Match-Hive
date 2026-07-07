@@ -143,16 +143,19 @@ def run(dry_run: bool = False) -> None:
         match_id = sb_row["id"]
         key = _utc_key(sb_row.get("date_utc"))
 
-        # Find matching API match: same UTC minute AND (teams match if known, or best candidate)
+        # Find matching API match:
+        # 1. Exact UTC-minute key match
+        # 2. Fallback: team-name match (covers rescheduled kickoffs)
+        # 3. Fallback: either-order team match (bracket home/away ≠ API home/away)
         api_m = None
+        sb_home = sb_row.get("home_team")
+        sb_away = sb_row.get("away_team")
+
         if key:
             candidates = [m for m in api_matches if _utc_key(m.get("utcDate")) == key]
             if len(candidates) == 1:
                 api_m = candidates[0]
             elif len(candidates) > 1:
-                # Prefer the one whose teams match what Supabase already has
-                sb_home = sb_row.get("home_team")
-                sb_away = sb_row.get("away_team")
                 for c in candidates:
                     ch = _resolve((c.get("homeTeam") or {}).get("name") or "")
                     ca = _resolve((c.get("awayTeam") or {}).get("name") or "")
@@ -160,7 +163,16 @@ def run(dry_run: bool = False) -> None:
                         api_m = c
                         break
                 if not api_m:
-                    api_m = candidates[0]  # fallback
+                    api_m = candidates[0]
+
+        # Team-name fallback for rescheduled matches
+        if not api_m and sb_home and sb_away:
+            for m in api_matches:
+                ch = _resolve((m.get("homeTeam") or {}).get("name") or "")
+                ca = _resolve((m.get("awayTeam") or {}).get("name") or "")
+                if (ch == sb_home and ca == sb_away) or (ch == sb_away and ca == sb_home):
+                    api_m = m
+                    break
 
         if not api_m:
             continue
@@ -175,6 +187,11 @@ def run(dry_run: bool = False) -> None:
         winner_side = score.get("winner")  # "HOME_TEAM" | "AWAY_TEAM" | "DRAW" | null
 
         updates: dict = {}
+
+        # Correct date_utc if API has a different kickoff time (rescheduled matches)
+        api_utc = api_m.get("utcDate")
+        if api_utc and _utc_key(api_utc) != _utc_key(sb_row.get("date_utc")):
+            updates["date_utc"] = api_utc
 
         # Populate team names when API has them and Supabase doesn't
         if home_name and sb_row.get("home_team") != home_name:
