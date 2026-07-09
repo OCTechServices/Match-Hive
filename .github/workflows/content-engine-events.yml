@@ -2,20 +2,20 @@ name: Content Engine — Match Events
 
 # Polls every 30 min during global match windows.
 # Lightweight detect job checks the API first — full publish job only runs
-# when a match is at half-time (PAUSED) or just finished (FINISHED, <3h ago).
+# when a match is at half-time (PAUSED) or just finished (FINISHED, <5h ago).
 # Deduplication via posted_events.json prevents double-posting.
 #
 # Match windows (UTC):
-#   17:00–23:59 — covers early/afternoon/evening kickoffs
-#   00:00–06:59 — covers late-night kickoffs (e.g. 23:30, 02:00, 03:00 UTC)
+#   16:00–23:30 — covers early/afternoon/evening kickoffs
+#   00:00–06:30 — covers late-night kickoffs (e.g. 23:30, 02:00, 03:00 UTC)
 
 permissions:
   contents: write   # required to commit posted_events.json after each publish
 
 on:
   schedule:
-    - cron: '0,15,30,45 16-23 * * *'   # every 15 min, 16:00–23:45 UTC (covers 16:00 UTC kickoffs)
-    - cron: '0,15,30,45 0-6 * * *'     # every 15 min, 00:00–06:45 UTC
+    - cron: '0,30 16-23 * * *'   # every 30 min, 16:00–23:30 UTC (covers 16:00 UTC kickoffs)
+    - cron: '0,30 0-6 * * *'     # every 30 min, 00:00–06:30 UTC
   workflow_dispatch:
     inputs:
       mode:
