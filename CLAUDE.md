@@ -2,7 +2,7 @@
 
 # match-hive — Project Context
 # Tier 1 — Enterprise Grade | OCTech Services
-# Last Updated: 2026-06-28
+# Last Updated: 2026-07-16
 
 ---
 
@@ -108,9 +108,17 @@ Daily Python pipeline: `signal_pull.py` → `content.py` (Claude) → `render.py
 
 **Cron workflows:**
 - `content-engine-daily.yml` — 11/15/19/23 UTC (Twitter-only) + 05 UTC (full run)
-- `content-engine-events.yml` — polls every 15 min during 16–23 UTC and 00–06 UTC. Lightweight detect job (`pip install requests` only) auto-detects PAUSED/FINISHED matches; publish job only runs on event. Deduplication via `output/posted_events.json`.
+- `content-engine-events.yml` — polls every 30 min during 16–23 UTC and 00–06 UTC. Lightweight detect job (`pip install requests` only) auto-detects PAUSED/FINISHED matches; publish job only runs on event. Deduplication via `output/posted_events.json`.
 
-**Key files:** `detect_event.py` (lightweight event checker for CI), `output/posted_events.json` (dedup log — committed to repo).
+**Key files:** `detect_event.py` (lightweight event checker for CI), `output/posted_events.json` (dedup log — committed to repo), `bracket_update.py` (syncs knockout results from football-data.org → Supabase `bracket_matches`; idempotent, safe to run anytime).
+
+**Bracket update:** Run manually after each knockout match to sync scores and advance winners:
+```bash
+cd scripts/content-engine
+source venv/bin/activate && env $(grep -v '^#' ../../.env.local | xargs) python bracket_update.py
+# Add --dry-run to preview changes without writing
+```
+**Known structural rule:** QF→SF bracket pairs QF1 vs QF3 → SF1, QF2 vs QF4 → SF2 (not adjacent pairs). `_advance()` skips completed destination matches — API home/away is authoritative once a match is finished.
 
 **Score lookup (schedule page):** Always use team-name key first, datetime fallback. Datetime keys collide on simultaneous kickoffs. `FD_NAME_MAP` in `app/schedule/page.tsx` must include accent variants (e.g. `Curaçao`).
 
