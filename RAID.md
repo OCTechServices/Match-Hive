@@ -1,6 +1,6 @@
 # RAID Log: match-hive
 # Tier 1 — Enterprise Grade | OCTech Services
-# Last Updated: 2026-07-08
+# Last Updated: 2026-07-15
 
 ---
 
@@ -32,6 +32,7 @@
 | I04 | `bracket_matches` table had stale IDs (`R32-1` etc.) mismatching code expectations (`M73–M104`) | Data mismatch | High | Resolved 2026-06-26 — table rebuilt via `seed-bracket-matches.mjs` with correct FIFA match IDs |
 | I05 | Score lookup used datetime key as primary for past matches — collides on simultaneous kickoffs, showing wrong scores | Code review | High | Resolved 2026-06-28 — team-name key is now primary everywhere; `Curaçao` added to FD_NAME_MAP |
 | I06 | Content engine events workflow: heredoc in YAML `run` block broke YAML parse; error prints to stdout captured as MODE variable | CI/CD | High | Resolved 2026-06-28 — heredoc replaced with `detect_event.py`; error prints redirected to stderr; null utcDate guarded |
+| I07 | `bracket_update.py` ADVANCEMENT map had wrong QF→SF bracket structure (M98↔M99 swapped) — caused M101/M102 to be populated with wrong teams and silently skipped on score sync; also `_advance()` overwrote completed match slots causing perpetual team-name flip-flop | Code bug | Critical | Resolved 2026-07-15 — fixed QF→SF mapping (M97+M99→M101, M98+M100→M102); `_advance()` now skips completed destination matches; Supabase data corrected manually for M97, M101–M104 |
 
 ## Dependencies
 | ID | Dependency | Type | Notes |

@@ -42,9 +42,9 @@ ADVANCEMENT: dict = {
     "M91": ("M98", "home"),  "M92": ("M98", "away"),
     "M93": ("M99", "home"),  "M94": ("M99", "away"),
     "M95": ("M100", "home"), "M96": ("M100", "away"),
-    # QF → SF
-    "M97":  ("M101", "home"), "M98":  ("M101", "away"),
-    "M99":  ("M102", "home"), "M100": ("M102", "away"),
+    # QF → SF  (upper bracket: QF1 vs QF3 → SF1; lower: QF2 vs QF4 → SF2)
+    "M97":  ("M101", "home"), "M99":  ("M101", "away"),
+    "M98":  ("M102", "home"), "M100": ("M102", "away"),
     # SF winners → Final
     "M101": ("M104", "home"), "M102": ("M104", "away"),
 }
@@ -257,8 +257,14 @@ def _advance(
     # Winner → next round
     if match_id in ADVANCEMENT:
         next_id, slot = ADVANCEMENT[match_id]
+        next_row = sb_by_id.get(next_id, {})
+        # Skip: if the destination match is already completed, the API's home/away
+        # assignment is authoritative — advancement-slot order may differ from API.
+        if next_row.get("status") == "completed":
+            print(f"  {winner} → {next_id} ({slot}): skipped (match completed, API home/away authoritative)")
+            return
         field = f"{slot}_team"
-        if sb_by_id.get(next_id, {}).get(field) != winner:
+        if next_row.get(field) != winner:
             print(f"  {winner} → {next_id} ({slot})")
             sb_update(next_id, {field: winner}, dry_run=dry_run)
         else:
