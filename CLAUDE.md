@@ -2,7 +2,7 @@
 
 # match-hive — Project Context
 # Tier 1 — Enterprise Grade | OCTech Services
-# Last Updated: 2026-07-16
+# Last Updated: 2026-07-24
 
 ---
 
@@ -107,8 +107,8 @@ Daily Python pipeline: `signal_pull.py` → `content.py` (Claude) → `render.py
 - `python main.py --generate-only` — generate + render, skip publish (works with all modes)
 
 **Cron workflows:**
-- `content-engine-daily.yml` — 11/15/19/23 UTC (Twitter-only) + 05 UTC (full run)
-- `content-engine-events.yml` — polls every 30 min during 16–23 UTC and 00–06 UTC. Lightweight detect job (`pip install requests` only) auto-detects PAUSED/FINISHED matches; publish job only runs on event. Deduplication via `output/posted_events.json`.
+- `content-engine-daily.yml` — 11/15/19/23 UTC (Twitter-only) + 05 UTC (full run) — **PAUSED** (WC2026 concluded July 19; `workflow_dispatch` still active)
+- `content-engine-events.yml` — polls every 30 min during 16–23 UTC and 00–06 UTC. Lightweight detect job (`pip install requests` only) auto-detects PAUSED/FINISHED matches; publish job only runs on event. Deduplication via `output/posted_events.json`. — **PAUSED** (WC2026 concluded July 19; `workflow_dispatch` still active)
 
 **Key files:** `detect_event.py` (lightweight event checker for CI), `output/posted_events.json` (dedup log — committed to repo), `bracket_update.py` (syncs knockout results from football-data.org → Supabase `bracket_matches`; idempotent, safe to run anytime).
 

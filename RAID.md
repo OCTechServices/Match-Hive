@@ -1,6 +1,6 @@
 # RAID Log: match-hive
 # Tier 1 — Enterprise Grade | OCTech Services
-# Last Updated: 2026-07-15
+# Last Updated: 2026-07-24
 
 ---
 
@@ -12,7 +12,7 @@
 | R03 | External API dependency breaks or changes without notice | Medium | Medium | Pin dependency versions; document all integrations in CLAUDE.md Section 4 |
 | R04 | CLAUDE.md becomes stale — Claude operates from outdated context | Medium | High | Update CLAUDE.md at session end whenever anything meaningful changes |
 | R05 | Schedule data inaccuracy — wrong dates or times displayed to users | Medium | High | Verify all changes to data/wc2026.ts against NBC Sports / FIFA official schedule |
-| R06 | Tournament window closes July 19 — cold-start marketplace risk | High | High | Build supply and demand simultaneously in remaining window. Meta ads + email capture are the insurance policy. |
+| R06 | Tournament window closes July 19 — cold-start marketplace risk | Realized | High | Tournament concluded July 19. Content engine crons paused. App remains live for archive/reference. |
 
 ## Assumptions
 | ID | Assumption |
