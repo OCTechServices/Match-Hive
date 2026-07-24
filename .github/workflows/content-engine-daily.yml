@@ -10,12 +10,13 @@ name: Content Engine — Daily Publish
 # Switch: TWITTER_ONLY=true on the 11/15/19/23 UTC runs; full run at 04 UTC
 
 on:
-  schedule:
-    - cron: '0 11 * * *'   # Twitter only — 7 AM ET
-    - cron: '0 15 * * *'   # Twitter only — 11 AM ET
-    - cron: '0 19 * * *'   # Twitter only — 3 PM ET
-    - cron: '0 23 * * *'   # Twitter only — 7 PM ET (evening update, matches still in play)
-    - cron: '0 5  * * *'   # Full run (IG + Twitter + Facebook copy) — 10 PM PDT / 1 AM ET, all results in
+  # PAUSED: World Cup 2026 concluded July 19. Re-enable schedule block for next tournament.
+  # schedule:
+  #   - cron: '0 11 * * *'   # Twitter only — 7 AM ET
+  #   - cron: '0 15 * * *'   # Twitter only — 11 AM ET
+  #   - cron: '0 19 * * *'   # Twitter only — 3 PM ET
+  #   - cron: '0 23 * * *'   # Twitter only — 7 PM ET (evening update, matches still in play)
+  #   - cron: '0 5  * * *'   # Full run (IG + Twitter + Facebook copy) — 10 PM PDT / 1 AM ET, all results in
   workflow_dispatch:
     inputs:
       twitter_only:
