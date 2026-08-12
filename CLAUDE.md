@@ -2,7 +2,7 @@
 
 # match-hive — Project Context
 # Tier 1 — Enterprise Grade | OCTech Services
-# Last Updated: 2026-07-24
+# Last Updated: 2026-08-11 (decommissioned — archive mode)
 
 ---
 
@@ -12,7 +12,7 @@
 **Type:** Consumer web app — sports utility
 **Purpose:** FIFA World Cup 2026 schedule tracker. Fans can view the full 72-match group stage schedule, select their team, and download matches directly to their calendar with 15-min and 5-min kickoff reminders.
 **Commercial Intent:** Consumer product. Lead capture via Meta Pixel (PageView + Lead events). Revenue path through engagement and audience growth.
-**Status:** Live — post-launch, active maintenance
+**Status:** Archived — WC2026 concluded July 19, 2026. App remains deployed as a read-only historical record. Supabase deleted. All external API credentials revoked. See `docs/DECOMMISSION.md`.
 **Production URL:** https://match-hive.vercel.app
 **Repository:** https://github.com/OCTechServices/Match-Hive.git
 
@@ -52,6 +52,7 @@
 | `/opengraph-image` | Dynamic | OG image |
 
 **Key data file:** `data/wc2026.ts` — all 48 teams and 72 group stage matches. Source: NBC Sports / FIFA official schedule. All times stored in UTC.
+**Bracket data:** `data/bracket-static.json` — all 32 knockout results (M73–M104), frozen at decommission. Scores corrected for 4 penalty-shootout matches (M74, M75, M88, M96 — was cumulative score, corrected to actual match score). **Source of truth for bracket — Supabase no longer exists.**
 
 **Key components:**
 - `components/TeamPicker.tsx` — client component, team selector + per-team schedule card + ICS download CTA
@@ -110,7 +111,9 @@ Daily Python pipeline: `signal_pull.py` → `content.py` (Claude) → `render.py
 - `content-engine-daily.yml` — 11/15/19/23 UTC (Twitter-only) + 05 UTC (full run) — **PAUSED** (WC2026 concluded July 19; `workflow_dispatch` still active)
 - `content-engine-events.yml` — polls every 30 min during 16–23 UTC and 00–06 UTC. Lightweight detect job (`pip install requests` only) auto-detects PAUSED/FINISHED matches; publish job only runs on event. Deduplication via `output/posted_events.json`. — **PAUSED** (WC2026 concluded July 19; `workflow_dispatch` still active)
 
-**Key files:** `detect_event.py` (lightweight event checker for CI), `output/posted_events.json` (dedup log — committed to repo), `bracket_update.py` (syncs knockout results from football-data.org → Supabase `bracket_matches`; idempotent, safe to run anytime).
+**Key files:** `detect_event.py` (lightweight event checker for CI), `output/posted_events.json` (dedup log — committed to repo), `bracket_update.py` (syncs knockout results from football-data.org → Supabase `bracket_matches`; idempotent, safe to run anytime), `farewell.py` (one-shot farewell carousel — already published 2026-07-24, do not re-run).
+
+**Carousel support:** `instagram_publisher.py` now includes `publish_carousel(posts, image_paths, caption)` — publishes a multi-slide Instagram carousel via the Graph API. Templates `tpl-farewell` and `tpl-stack` added to `templates/template.html`; mapped in `render.py`.
 
 **Bracket update:** Run manually after each knockout match to sync scores and advance winners:
 ```bash

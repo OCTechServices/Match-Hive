@@ -1,0 +1,39 @@
+[
+  {"id":"M73","round":"r32","slot":1,"home_team":"South Africa","away_team":"Canada","home_score":0,"away_score":1,"winner":"Canada","date_utc":"2026-06-28T19:00:00Z","venue":"SoFi Stadium","city":"Inglewood","status":"completed"},
+  {"id":"M75","round":"r32","slot":2,"home_team":"Netherlands","away_team":"Morocco","home_score":1,"away_score":1,"winner":"Morocco","date_utc":"2026-06-30T01:00:00Z","venue":"Estadio BBVA","city":"Monterrey","status":"completed"},
+  {"id":"M74","round":"r32","slot":3,"home_team":"Germany","away_team":"Paraguay","home_score":1,"away_score":1,"winner":"Paraguay","date_utc":"2026-06-29T20:30:00Z","venue":"Gillette Stadium","city":"Foxborough","status":"completed"},
+  {"id":"M77","round":"r32","slot":4,"home_team":"France","away_team":"Sweden","home_score":3,"away_score":0,"winner":"France","date_utc":"2026-06-30T21:00:00Z","venue":"MetLife Stadium","city":"East Rutherford","status":"completed"},
+  {"id":"M76","round":"r32","slot":5,"home_team":"Brazil","away_team":"Japan","home_score":2,"away_score":1,"winner":"Brazil","date_utc":"2026-06-29T17:00:00Z","venue":"NRG Stadium","city":"Houston","status":"completed"},
+  {"id":"M78","round":"r32","slot":6,"home_team":"Ivory Coast","away_team":"Norway","home_score":1,"away_score":2,"winner":"Norway","date_utc":"2026-06-30T17:00:00Z","venue":"AT&T Stadium","city":"Arlington","status":"completed"},
+  {"id":"M79","round":"r32","slot":7,"home_team":"Mexico","away_team":"Ecuador","home_score":2,"away_score":0,"winner":"Mexico","date_utc":"2026-07-01T02:00:00Z","venue":"Estadio Azteca","city":"Mexico City","status":"completed"},
+  {"id":"M80","round":"r32","slot":8,"home_team":"England","away_team":"DR Congo","home_score":2,"away_score":1,"winner":"England","date_utc":"2026-07-01T16:00:00Z","venue":"Mercedes-Benz Stadium","city":"Atlanta","status":"completed"},
+  {"id":"M83","round":"r32","slot":9,"home_team":"Portugal","away_team":"Croatia","home_score":2,"away_score":1,"winner":"Portugal","date_utc":"2026-07-02T23:00:00Z","venue":"BMO Field","city":"Toronto","status":"completed"},
+  {"id":"M84","round":"r32","slot":10,"home_team":"Spain","away_team":"Austria","home_score":3,"away_score":0,"winner":"Spain","date_utc":"2026-07-02T19:00:00Z","venue":"SoFi Stadium","city":"Inglewood","status":"completed"},
+  {"id":"M81","round":"r32","slot":11,"home_team":"USA","away_team":"Bosnia and Herzegovina","home_score":2,"away_score":0,"winner":"USA","date_utc":"2026-07-02T00:00:00Z","venue":"Levi's Stadium","city":"Santa Clara","status":"completed"},
+  {"id":"M82","round":"r32","slot":12,"home_team":"Belgium","away_team":"Senegal","home_score":3,"away_score":2,"winner":"Belgium","date_utc":"2026-07-01T20:00:00Z","venue":"Lumen Field","city":"Seattle","status":"completed"},
+  {"id":"M85","round":"r32","slot":13,"home_team":"Switzerland","away_team":"Algeria","home_score":2,"away_score":0,"winner":"Switzerland","date_utc":"2026-07-03T03:00:00Z","venue":"BC Place","city":"Vancouver","status":"completed"},
+  {"id":"M87","round":"r32","slot":14,"home_team":"Colombia","away_team":"Ghana","home_score":1,"away_score":0,"winner":"Colombia","date_utc":"2026-07-04T01:30:00Z","venue":"Arrowhead Stadium","city":"Kansas City","status":"completed"},
+  {"id":"M86","round":"r32","slot":15,"home_team":"Argentina","away_team":"Cape Verde","home_score":3,"away_score":2,"winner":"Argentina","date_utc":"2026-07-03T22:00:00Z","venue":"Hard Rock Stadium","city":"Miami Gardens","status":"completed"},
+  {"id":"M88","round":"r32","slot":16,"home_team":"Australia","away_team":"Egypt","home_score":1,"away_score":1,"winner":"Egypt","date_utc":"2026-07-03T18:00:00Z","venue":"AT&T Stadium","city":"Arlington","status":"completed"},
+
+  {"id":"M90","round":"r16","slot":1,"home_team":"Canada","away_team":"Morocco","home_score":0,"away_score":3,"winner":"Morocco","date_utc":"2026-07-04T17:00:00Z","venue":"NRG Stadium","city":"Houston","status":"completed"},
+  {"id":"M89","round":"r16","slot":2,"home_team":"Paraguay","away_team":"France","home_score":0,"away_score":1,"winner":"France","date_utc":"2026-07-04T21:00:00Z","venue":"Lincoln Financial Field","city":"Philadelphia","status":"completed"},
+  {"id":"M91","round":"r16","slot":3,"home_team":"Brazil","away_team":"Norway","home_score":1,"away_score":2,"winner":"Norway","date_utc":"2026-07-05T20:00:00Z","venue":"MetLife Stadium","city":"East Rutherford","status":"completed"},
+  {"id":"M92","round":"r16","slot":4,"home_team":"Mexico","away_team":"England","home_score":2,"away_score":3,"winner":"England","date_utc":"2026-07-06T01:00:00Z","venue":"Estadio Azteca","city":"Mexico City","status":"completed"},
+  {"id":"M93","round":"r16","slot":5,"home_team":"Portugal","away_team":"Spain","home_score":0,"away_score":1,"winner":"Spain","date_utc":"2026-07-06T19:00:00Z","venue":"AT&T Stadium","city":"Arlington","status":"completed"},
+  {"id":"M94","round":"r16","slot":6,"home_team":"USA","away_team":"Belgium","home_score":1,"away_score":4,"winner":"Belgium","date_utc":"2026-07-07T00:00:00Z","venue":"Lumen Field","city":"Seattle","status":"completed"},
+  {"id":"M95","round":"r16","slot":7,"home_team":"Argentina","away_team":"Egypt","home_score":3,"away_score":2,"winner":"Argentina","date_utc":"2026-07-07T16:00:00Z","venue":"Mercedes-Benz Stadium","city":"Atlanta","status":"completed"},
+  {"id":"M96","round":"r16","slot":8,"home_team":"Switzerland","away_team":"Colombia","home_score":0,"away_score":0,"winner":"Switzerland","date_utc":"2026-07-07T20:00:00Z","venue":"BC Place","city":"Vancouver","status":"completed"},
+
+  {"id":"M97","round":"qf","slot":1,"home_team":"France","away_team":"Morocco","home_score":2,"away_score":0,"winner":"France","date_utc":"2026-07-09T20:00:00Z","venue":"Gillette Stadium","city":"Foxborough","status":"completed"},
+  {"id":"M98","round":"qf","slot":2,"home_team":"Norway","away_team":"England","home_score":1,"away_score":2,"winner":"England","date_utc":"2026-07-11T21:00:00Z","venue":"SoFi Stadium","city":"Inglewood","status":"completed"},
+  {"id":"M99","round":"qf","slot":3,"home_team":"Spain","away_team":"Belgium","home_score":2,"away_score":1,"winner":"Spain","date_utc":"2026-07-10T19:00:00Z","venue":"Hard Rock Stadium","city":"Miami Gardens","status":"completed"},
+  {"id":"M100","round":"qf","slot":4,"home_team":"Argentina","away_team":"Switzerland","home_score":3,"away_score":1,"winner":"Argentina","date_utc":"2026-07-12T01:00:00Z","venue":"Arrowhead Stadium","city":"Kansas City","status":"completed"},
+
+  {"id":"M101","round":"sf","slot":1,"home_team":"France","away_team":"Spain","home_score":0,"away_score":2,"winner":"Spain","date_utc":"2026-07-14T19:00:00Z","venue":"AT&T Stadium","city":"Arlington","status":"completed"},
+  {"id":"M102","round":"sf","slot":2,"home_team":"England","away_team":"Argentina","home_score":1,"away_score":2,"winner":"Argentina","date_utc":"2026-07-15T19:00:00Z","venue":"Mercedes-Benz Stadium","city":"Atlanta","status":"completed"},
+
+  {"id":"M103","round":"3rd","slot":1,"home_team":"France","away_team":"England","home_score":4,"away_score":6,"winner":"England","date_utc":"2026-07-18T21:00:00Z","venue":"Hard Rock Stadium","city":"Miami Gardens","status":"completed"},
+
+  {"id":"M104","round":"final","slot":1,"home_team":"Spain","away_team":"Argentina","home_score":1,"away_score":0,"winner":"Spain","date_utc":"2026-07-19T19:00:00Z","venue":"MetLife Stadium","city":"East Rutherford","status":"completed"}
+]

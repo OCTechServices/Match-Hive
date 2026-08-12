@@ -46,7 +46,7 @@ interface FdGroup {
 
 async function fetchStandings(): Promise<FdGroup[]> {
   const key = process.env.FOOTBALL_DATA_API_KEY
-  if (!key) throw new Error('FOOTBALL_DATA_API_KEY not configured')
+  if (!key) return []
 
   const res = await fetch(
     'https://api.football-data.org/v4/competitions/WC/standings',
@@ -141,8 +141,10 @@ export default async function StandingsPage() {
         <div className="flex-1 h-px bg-white/10" />
       </div>
 
-      {error ? (
-        <p className="text-center text-white/30 text-sm py-20">{error}</p>
+      {error || groups.length === 0 ? (
+        <p className="text-center text-white/30 text-sm py-20">
+          {error ?? 'Final standings — FIFA World Cup 2026 concluded July 19, 2026.'}
+        </p>
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -151,7 +153,7 @@ export default async function StandingsPage() {
             ))}
           </div>
           <p className="mt-8 text-center text-[11px] text-white/20">
-            Top 2 from each group advance automatically · 8 best third-place teams also qualify · Updates every 5 min
+            Top 2 from each group advance automatically · 8 best third-place teams also qualify · Final standings — WC2026 concluded July 19, 2026
           </p>
         </>
       )}

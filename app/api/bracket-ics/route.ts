@@ -1,11 +1,12 @@
 // GET /api/bracket-ics?match=M86
-// Returns a single .ics file for one knockout bracket match.
-// Date/venue are always fixed. Team names are whatever is currently known (may be TBD).
+// Returns a single .ics calendar file for one knockout bracket match.
+// Data served from static JSON — WC2026 concluded July 19, 2026.
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createEvents } from 'ics'
 import type { EventAttributes } from 'ics'
-import { supabase } from '@/lib/supabase'
+import BRACKET_STATIC from '@/data/bracket-static.json'
+import type { BracketMatch } from '@/data/bracket'
 
 const ROUND_LABELS: Record<string, string> = {
   r32:   'Round of 32',
@@ -23,13 +24,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Missing required query param: match' }, { status: 400 })
   }
 
-  const { data, error } = await supabase
-    .from('bracket_matches')
-    .select('*')
-    .eq('id', matchId)
-    .single()
+  const data = (BRACKET_STATIC as BracketMatch[]).find(m => m.id === matchId)
 
-  if (error || !data) {
+  if (!data) {
     return NextResponse.json({ error: `Match not found: ${matchId}` }, { status: 404 })
   }
 
@@ -37,14 +34,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Match date not available' }, { status: 404 })
   }
 
-  const home = (data.home_team as string | null) ?? 'TBD'
-  const away = (data.away_team as string | null) ?? 'TBD'
-  const roundLabel = ROUND_LABELS[data.round as string] ?? (data.round as string)
-  const venue = (data.venue as string | null) ?? ''
-  const city  = (data.city  as string | null) ?? ''
+  const home = data.home_team ?? 'TBD'
+  const away = data.away_team ?? 'TBD'
+  const roundLabel = ROUND_LABELS[data.round] ?? data.round
+  const venue = data.venue ?? ''
+  const city  = data.city  ?? ''
 
-  const start = new Date(data.date_utc as string)
-  const end   = new Date(start.getTime() + 2 * 60 * 60 * 1000) // +2 h
+  const start = new Date(data.date_utc)
+  const end   = new Date(start.getTime() + 2 * 60 * 60 * 1000)
 
   const event: EventAttributes = {
     uid: `mh-${matchId}@match-hive`,
@@ -95,7 +92,7 @@ export async function GET(request: NextRequest) {
     headers: {
       'Content-Type': 'text/calendar; charset=utf-8',
       'Content-Disposition': `attachment; filename="${matchId}-wc2026.ics"`,
-      'Cache-Control': 'public, max-age=300',
+      'Cache-Control': 'public, max-age=86400',
     },
   })
 }
